@@ -8,6 +8,12 @@ AnyDiff works with complex objects of any type, and is great for performing chan
 
 It can even do this for objects that are of different types, though the results may vary depending on how different they are.
 
+## Installation
+Install AnyDiff from the Package Manager Console:
+```
+PM> Install-Package AnyDiff
+```
+
 ## Usage
 
 Comparing two objects with no differences:
