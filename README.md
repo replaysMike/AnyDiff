@@ -11,7 +11,7 @@ It can even do this for objects that are of different types, though the results 
 ## Usage
 
 Comparing two objects with no differences:
-```
+```csharp
 var object1 = new MyComplexObject(1, "A string");
 var object2 = new MyComplexObject(1, "A string");
 var diff = AnyDiff.Diff(object1, object2);
@@ -19,7 +19,7 @@ Assert.AreEqual(diff.Count, 0);
 ```
 
 Comparing two objects with a single expected change:
-```
+```csharp
 var object1 = new MyComplexObject(1, "A string");
 var object2 = new MyComplexObject(1, "A different string");
 var diff = AnyDiff.Diff(object1, object2);
@@ -27,7 +27,7 @@ Assert.AreEqual(diff.Count, 1);
 ```
 
 Viewing the results of a diff:
-```
+```csharp
 var diff = AnyDiff.Diff(object1, object2);
 var diff = AnyDiff.Diff(object1, object2);
 
@@ -44,7 +44,7 @@ foreach(var difference in diff)
 ```
 
 Comparing the difference between the same object at different states, using [AnyClone](https://github.com/replaysMike/AnyClone)
-```
+```csharp
 // using AnyClone;
 var object1 = new MyComplexObject(1, "A string");
 var object1Snapshot = object1.Clone();
