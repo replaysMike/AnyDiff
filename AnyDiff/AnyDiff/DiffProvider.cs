@@ -142,10 +142,13 @@ namespace AnyDiff
 
             // construct a hashtable of objects we have already inspected (simple recursion loop preventer)
             // we use this hashcode method as it does not use any custom hashcode handlers the object might implement
-            var hashCode = System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(left);
-            if (objectTree.Contains(hashCode))
-                return differences;
-            objectTree.Add(hashCode);
+            if (left != null)
+            {
+                var hashCode = System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(left);
+                if (objectTree.Contains(hashCode))
+                    return differences;
+                objectTree.Add(hashCode);
+            }
 
             // everything is ok to recurse
             var properties = GetProperties(left);
@@ -159,11 +162,25 @@ namespace AnyDiff
                     continue;
                 var propertyTypeSupport = new TypeSupport(property.PropertyType);
                 object leftValue = null;
-                if (left != null)
-                    leftValue = property.GetValue(left);
+                try
+                {
+                    if (left != null)
+                        leftValue = property.GetValue(left);
+                }
+                catch (Exception)
+                {
+                    // catch any exceptions accessing the property
+                }
                 object rightValue = null;
-                if (right != null)
-                    rightValue = property.GetValue(right);
+                try
+                {
+                    if (right != null)
+                        rightValue = property.GetValue(right);
+                }
+                catch (Exception)
+                {
+                    // catch any exceptions accessing the property
+                }
                 differences = GetDifferences(property.Name, property.PropertyType, GetTypeConverter(property), leftValue, rightValue, parent, differences, currentDepth, maxDepth, objectTree, allowCompareDifferentObjects, path, ignoreProperties);
             }
             foreach (var field in fields)
@@ -227,10 +244,19 @@ namespace AnyDiff
                 object leftValue = null;
                 object rightValue = null;
                 leftValue = left;
+                if (rightValue == null && leftValue != null || leftValue == null && rightValue != null)
+                {
+                    differences.Add(new Difference((leftValue ?? rightValue).GetType(), propertyName, leftValue, rightValue, typeConverter));
+                    return differences;
+                }
+                if (leftValue == null && rightValue == null)
+                    return differences;
+
                 if (allowCompareDifferentObjects)
                     rightValue = GetValueForProperty(right, propertyName);
                 else
                     rightValue = right;
+
                 var isCollection = propertyType != typeof(string) && propertyType.GetInterface(nameof(IEnumerable)) != null;
                 if (isCollection)
                 {
@@ -292,16 +318,20 @@ namespace AnyDiff
             return differences;
         }
 
-        private object GetValueForProperty(object o, string propertyName)
+        private object GetValueForProperty(object obj, string propertyName)
         {
-            var property = o.GetType().GetProperties().FirstOrDefault(x => x.Name.Equals(propertyName));
-            return property?.GetValue(o);
+            if (obj == null)
+                throw new ArgumentNullException(nameof(obj));
+            var property = obj.GetType().GetProperties().FirstOrDefault(x => x.Name.Equals(propertyName));
+            return property?.GetValue(obj);
         }
 
-        private object GetValueForField(object o, string propertyName)
+        private object GetValueForField(object obj, string propertyName)
         {
-            var field = o.GetType().GetFields().FirstOrDefault(x => x.Name.Equals(propertyName));
-            return field?.GetValue(o);
+            if (obj == null)
+                throw new ArgumentNullException(nameof(obj));
+            var field = obj.GetType().GetFields().FirstOrDefault(x => x.Name.Equals(propertyName));
+            return field?.GetValue(obj);
         }
 
         private bool IsMatch(object leftValue, object rightValue)

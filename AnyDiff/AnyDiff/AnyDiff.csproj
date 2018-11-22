@@ -2,6 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>Michael Brown</Authors>
+    <Company>Refactor Software</Company>
+    <Description>A CSharp library that allows you to diff two objects and get a list of the differences back.</Description>
+    <RepositoryUrl>https://github.com/replaysMike/AnyDiff</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/replaysMike/AnyDiff</PackageProjectUrl>
+    <PackageTags>diff compare objects difference difference-generator dotnet-standard refactor software michael brown</PackageTags>
+    <PackageReleaseNotes>A CSharp library that allows you to diff two objects and get a list of the differences back.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
