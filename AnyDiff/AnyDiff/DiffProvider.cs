@@ -244,18 +244,20 @@ namespace AnyDiff
                 object leftValue = null;
                 object rightValue = null;
                 leftValue = left;
-                if (rightValue == null && leftValue != null || leftValue == null && rightValue != null)
-                {
-                    differences.Add(new Difference((leftValue ?? rightValue).GetType(), propertyName, leftValue, rightValue, typeConverter));
-                    return differences;
-                }
-                if (leftValue == null && rightValue == null)
-                    return differences;
 
-                if (allowCompareDifferentObjects)
+                if (allowCompareDifferentObjects && rightValue != null)
                     rightValue = GetValueForProperty(right, propertyName);
                 else
                     rightValue = right;
+
+                if (rightValue == null && leftValue != null || leftValue == null && rightValue != null)
+                {
+                    differences.Add(new Difference((leftValue ?? rightValue).GetType(), propertyName, path, leftValue, rightValue, typeConverter));
+                    return differences;
+                }
+
+                if (leftValue == null && rightValue == null)
+                    return differences;
 
                 var isCollection = propertyType != typeof(string) && propertyType.GetInterface(nameof(IEnumerable)) != null;
                 if (isCollection)
@@ -292,14 +294,14 @@ namespace AnyDiff
                                 else
                                 {
                                     if (!IsMatch(leftValue, rightValue))
-                                        differences.Add(new Difference(leftValue.GetType(), propertyName, arrayIndex, leftValue, rightValue, typeConverter));
+                                        differences.Add(new Difference(leftValue.GetType(), propertyName, path, arrayIndex, leftValue, rightValue, typeConverter));
                                 }
                             }
                             else
                             {
                                 // left has a value in collection, right does not. That's a difference
                                 rightValue = null;
-                                differences.Add(new Difference(leftValue.GetType(), propertyName, arrayIndex, leftValue, rightValue, typeConverter));
+                                differences.Add(new Difference(leftValue.GetType(), propertyName, path, arrayIndex, leftValue, rightValue, typeConverter));
                             }
                             arrayIndex++;
                         }
@@ -312,7 +314,7 @@ namespace AnyDiff
                 else
                 {
                     if (!IsMatch(leftValue, rightValue))
-                        differences.Add(new Difference(propertyType, propertyName, leftValue, rightValue, typeConverter));
+                        differences.Add(new Difference(propertyType, propertyName, path, leftValue, rightValue, typeConverter));
                 }
             }
             return differences;

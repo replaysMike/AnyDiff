@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
 
 namespace AnyDiff
 {
@@ -10,6 +9,7 @@ namespace AnyDiff
     /// </summary>
     public class Difference
     {
+        public string Path { get; set; }
         public string Property { get; set; }
         public int? ArrayIndex { get; set; }
         public Type PropertyType { get; set; }
@@ -33,9 +33,9 @@ namespace AnyDiff
                 { typeof(decimal), (leftValue, rightValue) => (decimal)rightValue - (decimal)leftValue },
                 { typeof(decimal?), (leftValue, rightValue) => (decimal?)rightValue ?? 0 - (decimal?)leftValue ?? 0 },
                 { typeof(TimeSpan), (leftValue, rightValue) => (TimeSpan)rightValue - (TimeSpan)leftValue },
-                { typeof(TimeSpan?), (leftValue, rightValue) => ((TimeSpan?)rightValue ?? TimeSpan.MinValue) - ((TimeSpan?)leftValue ?? TimeSpan.MinValue) },
+                { typeof(TimeSpan?), (leftValue, rightValue) => ((TimeSpan?)rightValue ?? TimeSpan.Zero) - ((TimeSpan?)leftValue ?? TimeSpan.Zero) },
                 { typeof(DateTime), (leftValue, rightValue) => (DateTime)rightValue - (DateTime)leftValue },
-                { typeof(DateTime?), (leftValue, rightValue) => ((DateTime?)rightValue ?? DateTime.MinValue) - ((DateTime?)leftValue ?? DateTime.MinValue) },
+                { typeof(DateTime?), (leftValue, rightValue) => ((DateTime?)rightValue ?? new DateTime()) - ((DateTime?)leftValue ?? new DateTime()) },
                 // these values are not swapped in order
                 { typeof(Guid), (leftValue, rightValue) => { return CompareStrings(((Guid)leftValue).ToString(), ((Guid)rightValue).ToString()); } },
                 { typeof(Guid?), (leftValue, rightValue) => { return CompareStrings(((Guid?)leftValue)?.ToString(), ((Guid?)rightValue)?.ToString()); } },
@@ -50,7 +50,7 @@ namespace AnyDiff
         /// <param name="leftValue"></param>
         /// <param name="rightValue"></param>
         /// <param name="converter"></param>
-        public Difference(Type propertyType, string property, object leftValue, object rightValue, TypeConverter converter = null)
+        public Difference(Type propertyType, string property, string path, object leftValue, object rightValue, TypeConverter converter = null)
         {
             PropertyType = propertyType;
             if (Nullable.GetUnderlyingType(propertyType) == null && (leftValue == null || rightValue == null))
@@ -59,6 +59,7 @@ namespace AnyDiff
                 // so we can perform diff checks on it properly
                 PropertyType = GetNullableType(propertyType);
             }
+            Path = path;
             Property = property;
             LeftValue = leftValue;
             RightValue = rightValue;
@@ -88,11 +89,12 @@ namespace AnyDiff
         /// </summary>
         /// <param name="propertyType"></param>
         /// <param name="property"></param>
+        /// <param name="path"></param>
         /// <param name="arrayIndex"></param>
         /// <param name="leftValue"></param>
         /// <param name="rightValue"></param>
         /// <param name="converter"></param>
-        public Difference(Type propertyType, string property, int arrayIndex, object leftValue, object rightValue, TypeConverter converter = null) : this(propertyType, property, leftValue, rightValue, converter)
+        public Difference(Type propertyType, string property, string path, int arrayIndex, object leftValue, object rightValue, TypeConverter converter = null) : this(propertyType, property, path, leftValue, rightValue, converter)
         {
             ArrayIndex = arrayIndex;
         }
