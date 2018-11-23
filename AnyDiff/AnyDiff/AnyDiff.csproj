@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1-beta1" />
+    <PackageReference Include="TypeSupport" Version="1.0.3" />
   </ItemGroup>
 
 </Project>

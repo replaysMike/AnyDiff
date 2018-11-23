@@ -7,6 +7,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Serialization;
+using TypeSupport;
 
 namespace AnyDiff
 {
@@ -131,7 +132,7 @@ namespace AnyDiff
             if (ignoreProperties == null)
                 ignoreProperties = new List<string>();
 
-            var typeSupport = new TypeSupport(left != null ? left.GetType() : right.GetType());
+            var typeSupport = new ExtendedType(left != null ? left.GetType() : right.GetType());
             if (typeSupport.Attributes.Any(x => _ignoreAttributes.Contains(x)))
                 return differences;
             if (typeSupport.IsDelegate)
@@ -160,7 +161,7 @@ namespace AnyDiff
                 path = $"{rootPath}.{property.Name}";
                 if (property.CustomAttributes.Any(x => _ignoreAttributes.Contains(x.AttributeType)))
                     continue;
-                var propertyTypeSupport = new TypeSupport(property.PropertyType);
+                var propertyTypeSupport = new ExtendedType(property.PropertyType);
                 object leftValue = null;
                 try
                 {
@@ -188,7 +189,7 @@ namespace AnyDiff
                 path = $"{rootPath}.{field.Name}";
                 if (field.CustomAttributes.Any(x => _ignoreAttributes.Contains(x.AttributeType)))
                     continue;
-                var fieldTypeSupport = new TypeSupport(field.FieldType);
+                var fieldTypeSupport = new ExtendedType(field.FieldType);
                 object leftValue = null;
                 if (left != null)
                     leftValue = field.GetValue(left);
