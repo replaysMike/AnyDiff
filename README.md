@@ -18,30 +18,29 @@ PM> Install-Package AnyDiff
 
 Comparing two objects with no differences:
 ```csharp
-using AnyDiff;
+using AnyDiff.Extensions;
 
 var object1 = new MyComplexObject(1, "A string");
 var object2 = new MyComplexObject(1, "A string");
-var diff = AnyDiff.Diff(object1, object2);
+var diff = object1.Diff(object2);
 Assert.AreEqual(diff.Count, 0);
 ```
 
 Comparing two objects with a single expected change:
 ```csharp
-using AnyDiff;
+using AnyDiff.Extensions;
 
 var object1 = new MyComplexObject(1, "A string");
 var object2 = new MyComplexObject(1, "A different string");
-var diff = AnyDiff.Diff(object1, object2);
+var diff = object1.Diff(object2);
 Assert.AreEqual(diff.Count, 1);
 ```
 
 Viewing the results of a diff:
 ```csharp
-using AnyDiff;
+using AnyDiff.Extensions;
 
-var diff = AnyDiff.Diff(object1, object2);
-var diff = AnyDiff.Diff(object1, object2);
+var diff = object1.Diff(object2);
 
 foreach(var difference in diff)
 {
@@ -57,17 +56,18 @@ foreach(var difference in diff)
 
 Comparing the difference between the same object at different states, using [AnyClone](https://github.com/replaysMike/AnyClone)
 ```csharp
+using AnyDiff.Extensions;
 using AnyClone;
 
 var object1 = new MyComplexObject(1, "A string");
 var object1Snapshot = object1.Clone();
 
-var diff = AnyDiff.Diff(object1, object1Snapshot);
+var diff = object1.Diff(object1Snapshot);
 Assert.AreEqual(diff.Count, 0);
 
 // change something anywhere in the object tree
 object1.Name = "A different string";
 
-diff = AnyDiff.Diff(object1, object1Snapshot);
+diff = object1.Diff(object1Snapshot);
 Assert.AreEqual(diff.Count, 1);
 ```
