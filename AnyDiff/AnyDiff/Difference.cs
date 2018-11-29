@@ -126,7 +126,7 @@ namespace AnyDiff
 
         public override string ToString()
         {
-            return Property;
+            return Path;
         }
 
         private static object CompareStrings(string leftValue, string rightValue)

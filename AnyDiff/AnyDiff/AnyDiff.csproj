@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
-    <PackageReference Include="TypeSupport" Version="1.0.4" />
+    <PackageReference Include="TypeSupport" Version="1.0.5" />
   </ItemGroup>
 
 </Project>

@@ -145,7 +145,7 @@ namespace AnyDiff.Tests
         }
 
         [Test]
-        public void ShouldDetectCollection()
+        public void ShouldDetect_Differences_Collection()
         {
             var provider = new DiffProvider();
 
@@ -158,7 +158,7 @@ namespace AnyDiff.Tests
         }
 
         [Test]
-        public void ShouldDetectNoChange()
+        public void ShouldDetect_NoDifferences_Collection()
         {
             var provider = new DiffProvider();
 
@@ -166,6 +166,36 @@ namespace AnyDiff.Tests
             var obj2 = new TestObject { IntValue = 5, Collection = new int[] { 0, 0, 5, 0, 0 } };
             var diff = provider.ComputeDiff<TestObject>(obj1, obj2);
             Assert.AreEqual(0, diff.Count);
+        }
+
+        [Test]
+        public void ShouldDetect_NoDifferences_Hashtable()
+        {
+            var provider = new DiffProvider();
+            var obj1 = new System.Collections.Hashtable();
+            obj1.Add(1, "Test");
+            obj1.Add(2, "Test");
+            var obj2 = new System.Collections.Hashtable();
+            obj2.Add(1, "Test");
+            obj2.Add(2, "Test");
+
+            var diff = provider.ComputeDiff(obj1, obj2);
+            Assert.AreEqual(0, diff.Count);
+        }
+
+        [Test]
+        public void ShouldDetect_Differences_Hashtable()
+        {
+            var provider = new DiffProvider();
+            var obj1 = new System.Collections.Hashtable();
+            obj1.Add(1, "Test");
+            obj1.Add(3, "Test");
+            var obj2 = new System.Collections.Hashtable();
+            obj2.Add(1, "Test");
+            obj2.Add(2, "Test");
+
+            var diff = provider.ComputeDiff(obj1, obj2, ComparisonOptions.All, "._keys", "._buckets");
+            Assert.AreEqual(2, diff.Count);
         }
     }  
 }
