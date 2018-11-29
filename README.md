@@ -1,4 +1,5 @@
 # AnyDiff
+[![nuget](https://img.shields.io/nuget/v/AnyDiff.svg)](https://www.nuget.org/packages/AnyDiff/)
 
 A CSharp library that allows you to diff two objects and get a list of the differences back.
 
