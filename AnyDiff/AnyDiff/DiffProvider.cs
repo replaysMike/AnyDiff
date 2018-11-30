@@ -196,8 +196,13 @@ namespace AnyDiff
             foreach (var property in properties)
             {
                 path = $"{rootPath}.{property.Name}";
+#if FEATURE_CUSTOM_ATTRIBUTES
                 if (property.CustomAttributes.Any(x => _ignoreAttributes.Contains(x.AttributeType)))
                     continue;
+#else
+                if (property.CustomAttributes.Any(x => _ignoreAttributes.Contains(x.GetType())))
+                    continue;
+#endif
                 var propertyTypeSupport = new ExtendedType(property.Type);
                 object leftValue = null;
                 try
@@ -224,8 +229,13 @@ namespace AnyDiff
             foreach (var field in fields)
             {
                 path = $"{rootPath}.{field.Name}";
+#if FEATURE_CUSTOM_ATTRIBUTES
                 if (field.CustomAttributes.Any(x => _ignoreAttributes.Contains(x.AttributeType)))
                     continue;
+#else
+                if (field.CustomAttributes.Any(x => _ignoreAttributes.Contains(x.GetType())))
+                    continue;
+#endif
                 var fieldTypeSupport = new ExtendedType(field.Type);
                 object leftValue = null;
                 if (left != null)
@@ -364,7 +374,11 @@ namespace AnyDiff
             if (obj == null)
                 throw new ArgumentNullException(nameof(obj));
             var property = obj.GetType().GetProperties().FirstOrDefault(x => x.Name.Equals(propertyName));
+#if FEATURE_SETVALUE
             return property?.GetValue(obj);
+#else
+            return property?.GetValue(obj, null);
+#endif
         }
 
         private object GetValueForField(object obj, string propertyName)

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net40;net45;net46</TargetFrameworks>
     <Authors>Michael Brown</Authors>
     <Company>Refactor Software</Company>
     <Description>A CSharp library that allows you to diff two objects and get a list of the differences back.</Description>
@@ -9,12 +9,20 @@
     <PackageProjectUrl>https://github.com/replaysMike/AnyDiff</PackageProjectUrl>
     <PackageTags>diff compare objects difference difference-generator dotnet-standard refactor software michael brown</PackageTags>
     <PackageReleaseNotes>A CSharp library that allows you to diff two objects and get a list of the differences back.</PackageReleaseNotes>
-    <Version>1.0.5</Version>
+    <Version>1.0.7</Version>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)'=='netstandard2.0' OR '$(TargetFramework)'=='net45' OR '$(TargetFramework)'=='net46'">
+    <DefineConstants>FEATURE_CUSTOM_ATTRIBUTES;FEATURE_CUSTOM_TYPEINFO;FEATURE_GETMETHOD;FEATURE_SETVALUE;FEATURE_TASK;FEATURE_ASSEMBLYBUILDER</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
+    <DefineConstants>FEATURE_CUSTOM_VALUETUPLE;FEATURE_CUSTOM_ATTRIBUTES;FEATURE_CUSTOM_TYPEINFO;FEATURE_GETMETHOD;FEATURE_SETVALUE;FEATURE_TASK;FEATURE_ASSEMBLYBUILDER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
-    <PackageReference Include="TypeSupport" Version="1.0.5" />
+    <PackageReference Include="TypeSupport" Version="1.0.7" />
   </ItemGroup>
 
 </Project>
