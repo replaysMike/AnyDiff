@@ -75,7 +75,10 @@ Assert.AreEqual(TimeSpan.FromMinutes(5), diff.First().Delta); // difference of 5
 ### Ignoring Properties
 
 Anydiff will ignore fields and properties decorated using attributes: `[IgnoreDataMember]`, `[NonSerialized]`, and `[JsonIgnore]`.
-In addition, you can specify properties to ignore using expression syntax:
+In addition, you can specify properties to ignore using expression syntax.
+See [Ignoring Properties and Fields](https://github.com/replaysMike/AnyDiff/wiki/Ignoring-Properties-and-Fields) for more details.
+
+Ignoring by properties explicitly:
 
 ```csharp
 var object1 = new MyComplexObject(1, "A string", true);
