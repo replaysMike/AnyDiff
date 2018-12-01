@@ -304,6 +304,7 @@ namespace AnyDiff
                     // iterate the collection
                     var aValueCollection = (leftValue as IEnumerable);
                     var bValueCollection = (rightValue as IEnumerable);
+                    var bValueCollectionCount = GetCountFromEnumerable(bValueCollection);
                     var bValueEnumerator = bValueCollection?.GetEnumerator();
                     var arrayIndex = 0;
                     if (aValueCollection != null)
@@ -324,11 +325,29 @@ namespace AnyDiff
                                 {
                                     // compare keys and values of a KVP
                                     var leftKvpKey = GetValueForProperty(leftValue, "Key");
+                                    var keyType = leftKvpKey.GetType();
                                     var leftKvpValue = GetValueForProperty(leftValue, "Value");
+                                    var valueType = leftKvpValue.GetType();
                                     var rightKvpKey = GetValueForProperty(rightValue, "Key");
                                     var rightKvpValue = GetValueForProperty(rightValue, "Value");
-                                    differences = RecurseProperties(leftKvpKey, rightKvpKey, leftValue, differences, currentDepth, maxDepth, objectTree, allowCompareDifferentObjects, path, options, ignorePropertiesOrPaths);
-                                    differences = RecurseProperties(leftKvpValue, rightKvpValue, leftValue, differences, currentDepth, maxDepth, objectTree, allowCompareDifferentObjects, path, options, ignorePropertiesOrPaths);
+
+                                    // compare the key
+                                    if (!keyType.IsValueType && keyType != typeof(string))
+                                        differences = RecurseProperties(leftKvpKey, rightKvpKey, leftValue, differences, currentDepth, maxDepth, objectTree, allowCompareDifferentObjects, path, options, ignorePropertiesOrPaths);
+                                    else
+                                    {
+                                        if (!IsMatch(leftKvpKey, rightKvpKey))
+                                            differences.Add(new Difference(keyType, propertyName, path, arrayIndex, leftKvpKey, rightKvpKey, typeConverter));
+                                    }
+
+                                    // compare the value
+                                    if (!valueType.IsValueType && valueType != typeof(string))
+                                        differences = RecurseProperties(leftKvpValue, rightKvpValue, leftValue, differences, currentDepth, maxDepth, objectTree, allowCompareDifferentObjects, path, options, ignorePropertiesOrPaths);
+                                    else
+                                    {
+                                        if (!IsMatch(leftValue, rightValue))
+                                            differences.Add(new Difference(valueType, propertyName, path, arrayIndex, leftKvpValue, rightKvpValue, typeConverter));
+                                    }
                                 }
                                 else
                                 {
@@ -344,6 +363,17 @@ namespace AnyDiff
                             }
                             arrayIndex++;
                         }
+                        if(bValueCollectionCount > arrayIndex)
+                        {
+                            // right side has extra elements
+                            var rightSideExtraElements = bValueCollectionCount - arrayIndex;
+                            for (var i = 0; i < rightSideExtraElements; i++)
+                            {
+                                bValueEnumerator.MoveNext();
+                                differences.Add(new Difference(aValueCollection.GetType(), propertyName, path, arrayIndex, null, bValueEnumerator.Current, typeConverter));
+                                arrayIndex++;
+                            }
+                        }
                     }
                 }
                 else if (!propertyType.IsValueType && propertyType != typeof(string))
@@ -357,6 +387,25 @@ namespace AnyDiff
                 }
             }
             return differences;
+        }
+
+        private long GetCountFromEnumerable(IEnumerable enumerable)
+        {
+            if (enumerable == null)
+                return 0L;
+            var count = 0L;
+            var enumerableType = enumerable.GetType().GetExtendedType();
+            if (enumerableType.IsCollection)
+                return ((ICollection)enumerable).Count;
+            if (enumerableType.IsArray)
+                return ((Array)enumerable).LongLength;
+
+            var enumerator = enumerable.GetEnumerator();
+            // count the enumerable
+            foreach (var row in enumerable)
+                count++;
+            enumerator.Reset();
+            return count;
         }
 
         private object GetValueForProperty(object obj, string propertyName)
