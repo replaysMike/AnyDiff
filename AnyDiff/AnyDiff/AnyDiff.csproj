@@ -9,7 +9,7 @@
     <PackageProjectUrl>https://github.com/replaysMike/AnyDiff</PackageProjectUrl>
     <PackageTags>diff compare objects difference difference-generator dotnet-standard refactor software michael brown</PackageTags>
     <PackageReleaseNotes>A CSharp library that allows you to diff two objects and get a list of the differences back.</PackageReleaseNotes>
-    <Version>1.0.5</Version>
+    <Version>1.0.8</Version>
   </PropertyGroup>
 
   <ItemGroup>
