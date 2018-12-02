@@ -428,7 +428,7 @@ namespace AnyDiff
 #if FEATURE_CUSTOM_ATTRIBUTES
             if (attributes?.Any(x => _ignoreAttributes.Contains(x.AttributeType)) == true && !options.BitwiseHasFlag(ComparisonOptions.DisableIgnoreAttributes))
 #else
-            if (attributes?.Any(x => _ignoreAttributes.Contains(x.GetType())) == true  && !options.BitwiseHasFlag(ComparisonOptions.DisableIgnoreAttributes))
+            if (attributes?.Any(x => _ignoreAttributes.Contains(x.Constructor.DeclaringType)) == true  && !options.BitwiseHasFlag(ComparisonOptions.DisableIgnoreAttributes))
 #endif
                 return true;
             return false;
