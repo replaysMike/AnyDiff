@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>AnyDiff</id>
-    <version>1.0.12</version>
+    <version>$version$</version>
     <authors>Michael Brown</authors>
     <owners>Michael Brown</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
