@@ -24,5 +24,9 @@ namespace AnyDiff
         /// Compare all objects
         /// </summary>
         All = CompareProperties | CompareFields | CompareCollections,
+        /// <summary>
+        /// Specify if you want disable the ignore by attribute feature
+        /// </summary>
+        DisableIgnoreAttributes,
     }
 }

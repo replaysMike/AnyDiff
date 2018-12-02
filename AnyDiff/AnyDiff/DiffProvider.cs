@@ -146,6 +146,9 @@ namespace AnyDiff
         /// <returns></returns>
         private ICollection<Difference> RecurseProperties(object left, object right, object parent, ICollection<Difference> differences, int currentDepth, int maxDepth, HashSet<int> objectTree, bool allowCompareDifferentObjects, string path, ComparisonOptions options, ICollection<string> ignorePropertiesOrPaths = null)
         {
+            if (IgnoreObjectName(null, path, options, ignorePropertiesOrPaths))
+                return differences;
+
             if (!allowCompareDifferentObjects
                 && left != null && right != null
                 && left?.GetType() != right?.GetType())
@@ -181,7 +184,7 @@ namespace AnyDiff
 
             // get list of properties
             var properties = new List<ExtendedProperty>();
-            if(options.BitwiseHasFlag(ComparisonOptions.CompareProperties))
+            if (options.BitwiseHasFlag(ComparisonOptions.CompareProperties))
                 properties.AddRange(left.GetProperties(PropertyOptions.All));
 
             // get all fields, except for backed auto-property fields
@@ -196,7 +199,7 @@ namespace AnyDiff
             foreach (var property in properties)
             {
                 path = $"{rootPath}.{property.Name}";
-                if (property.CustomAttributes.Any(x => _ignoreAttributes.Contains(x.AttributeType)))
+                if (IgnoreObjectName(property.Name, path, options, ignorePropertiesOrPaths, property.CustomAttributes))
                     continue;
                 var propertyTypeSupport = new ExtendedType(property.Type);
                 object leftValue = null;
@@ -224,7 +227,7 @@ namespace AnyDiff
             foreach (var field in fields)
             {
                 path = $"{rootPath}.{field.Name}";
-                if (field.CustomAttributes.Any(x => _ignoreAttributes.Contains(x.AttributeType)))
+                if (IgnoreObjectName(field.Name, path, options, ignorePropertiesOrPaths, field.CustomAttributes))
                     continue;
                 var fieldTypeSupport = new ExtendedType(field.Type);
                 object leftValue = null;
@@ -237,6 +240,156 @@ namespace AnyDiff
             }
 
             return differences;
+        }
+
+        /// <summary>
+        /// Get the differences between two objects
+        /// </summary>
+        /// <param name="propertyName">The name of the property being compared</param>
+        /// <param name="propertyType">The type of property being compared. The left property is assumed unless allowCompareDifferentObjects=true</param>
+        /// <param name="typeConverter">An optional TypeConverter to treat the type as a different type</param>
+        /// <param name="left">The left object to compare</param>
+        /// <param name="right">The right object to compare</param>
+        /// <param name="parent">The parent object</param>
+        /// <param name="differences">A list of differences currently found in the tree</param>
+        /// <param name="currentDepth">The current depth of the tree recursion</param>
+        /// <param name="maxDepth">The maximum number of tree children to recurse</param>
+        /// <param name="objectTree">A hash table containing the tree that has already been traversed, to prevent recursion loops</param>
+        /// <param name="allowCompareDifferentObjects">True to allow comparing of objects with different types</param>
+        /// <param name="options">Specify the comparison options</param>
+        /// <param name="ignorePropertiesOrPaths">A list of property names or full path names to ignore</param>
+        /// <returns></returns>
+        private ICollection<Difference> GetDifferences(string propertyName, Type propertyType, TypeConverter typeConverter, object left, object right, object parent, ICollection<Difference> differences, int currentDepth, int maxDepth, HashSet<int> objectTree, bool allowCompareDifferentObjects, string path, ComparisonOptions options, ICollection<string> ignorePropertiesOrPaths = null)
+        {
+            if (IgnoreObjectName(propertyName, path, options, ignorePropertiesOrPaths))
+                return differences;
+
+            object leftValue = null;
+            object rightValue = null;
+            leftValue = left;
+
+            if (allowCompareDifferentObjects && rightValue != null)
+                rightValue = GetValueForProperty(right, propertyName);
+            else
+                rightValue = right;
+
+            if (rightValue == null && leftValue != null || leftValue == null && rightValue != null)
+            {
+                differences.Add(new Difference((leftValue ?? rightValue).GetType(), propertyName, path, leftValue, rightValue, typeConverter));
+                return differences;
+            }
+
+            if (leftValue == null && rightValue == null)
+                return differences;
+
+            var isCollection = propertyType != typeof(string) && propertyType.GetInterface(nameof(IEnumerable)) != null;
+            if (isCollection && options.BitwiseHasFlag(ComparisonOptions.CompareCollections))
+            {
+                // iterate the collection
+                var aValueCollection = (leftValue as IEnumerable);
+                var bValueCollection = (rightValue as IEnumerable);
+                var bValueCollectionCount = GetCountFromEnumerable(bValueCollection);
+                var bValueEnumerator = bValueCollection?.GetEnumerator();
+                var arrayIndex = 0;
+                if (aValueCollection != null)
+                {
+                    foreach (var collectionItem in aValueCollection)
+                    {
+                        var hasValue = bValueEnumerator?.MoveNext() ?? false;
+                        leftValue = collectionItem;
+                        if (hasValue)
+                        {
+                            rightValue = bValueEnumerator?.Current;
+                            // check array element for difference
+                            if (!leftValue.GetType().IsValueType && leftValue.GetType() != typeof(string))
+                            {
+                                differences = RecurseProperties(leftValue, rightValue, parent, differences, currentDepth, maxDepth, objectTree, allowCompareDifferentObjects, path, options, ignorePropertiesOrPaths);
+                            }
+                            else if (leftValue.GetType().IsGenericType && leftValue.GetType().GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
+                            {
+                                // compare keys and values of a KVP
+                                var leftKvpKey = GetValueForProperty(leftValue, "Key");
+                                var keyType = leftKvpKey.GetType();
+                                var leftKvpValue = GetValueForProperty(leftValue, "Value");
+                                var valueType = leftKvpValue.GetType();
+                                var rightKvpKey = GetValueForProperty(rightValue, "Key");
+                                var rightKvpValue = GetValueForProperty(rightValue, "Value");
+
+                                // compare the key
+                                if (!keyType.IsValueType && keyType != typeof(string))
+                                    differences = RecurseProperties(leftKvpKey, rightKvpKey, leftValue, differences, currentDepth, maxDepth, objectTree, allowCompareDifferentObjects, path, options, ignorePropertiesOrPaths);
+                                else
+                                {
+                                    if (!IsMatch(leftKvpKey, rightKvpKey))
+                                        differences.Add(new Difference(keyType, propertyName, path, arrayIndex, leftKvpKey, rightKvpKey, typeConverter));
+                                }
+
+                                // compare the value
+                                if (!valueType.IsValueType && valueType != typeof(string))
+                                    differences = RecurseProperties(leftKvpValue, rightKvpValue, leftValue, differences, currentDepth, maxDepth, objectTree, allowCompareDifferentObjects, path, options, ignorePropertiesOrPaths);
+                                else
+                                {
+                                    if (!IsMatch(leftValue, rightValue))
+                                        differences.Add(new Difference(valueType, propertyName, path, arrayIndex, leftKvpValue, rightKvpValue, typeConverter));
+                                }
+                            }
+                            else
+                            {
+                                if (!IsMatch(leftValue, rightValue))
+                                    differences.Add(new Difference(leftValue.GetType(), propertyName, path, arrayIndex, leftValue, rightValue, typeConverter));
+                            }
+                        }
+                        else
+                        {
+                            // left has a value in collection, right does not. That's a difference
+                            rightValue = null;
+                            differences.Add(new Difference(leftValue.GetType(), propertyName, path, arrayIndex, leftValue, rightValue, typeConverter));
+                        }
+                        arrayIndex++;
+                    }
+                    if (bValueCollectionCount > arrayIndex)
+                    {
+                        // right side has extra elements
+                        var rightSideExtraElements = bValueCollectionCount - arrayIndex;
+                        for (var i = 0; i < rightSideExtraElements; i++)
+                        {
+                            bValueEnumerator.MoveNext();
+                            differences.Add(new Difference(aValueCollection.GetType(), propertyName, path, arrayIndex, null, bValueEnumerator.Current, typeConverter));
+                            arrayIndex++;
+                        }
+                    }
+                }
+            }
+            else if (!propertyType.IsValueType && propertyType != typeof(string))
+            {
+                differences = RecurseProperties(leftValue, rightValue, leftValue, differences, currentDepth, maxDepth, objectTree, allowCompareDifferentObjects, path, options, ignorePropertiesOrPaths);
+            }
+            else
+            {
+                if (!IsMatch(leftValue, rightValue))
+                    differences.Add(new Difference(propertyType, propertyName, path, leftValue, rightValue, typeConverter));
+            }
+
+            return differences;
+        }
+
+        private long GetCountFromEnumerable(IEnumerable enumerable)
+        {
+            if (enumerable == null)
+                return 0L;
+            var count = 0L;
+            var enumerableType = enumerable.GetType().GetExtendedType();
+            if (enumerableType.IsCollection)
+                return ((ICollection)enumerable).Count;
+            if (enumerableType.IsArray)
+                return ((Array)enumerable).LongLength;
+
+            var enumerator = enumerable.GetEnumerator();
+            // count the enumerable
+            foreach (var row in enumerable)
+                count++;
+            enumerator.Reset();
+            return count;
         }
 
         private TypeConverter GetTypeConverter(PropertyInfo property)
@@ -260,152 +413,25 @@ namespace AnyDiff
         }
 
         /// <summary>
-        /// Get the differences between two objects
+        /// Returns true if object name should be ignored
         /// </summary>
-        /// <param name="propertyName">The name of the property being compared</param>
-        /// <param name="propertyType">The type of property being compared. The left property is assumed unless allowCompareDifferentObjects=true</param>
-        /// <param name="typeConverter">An optional TypeConverter to treat the type as a different type</param>
-        /// <param name="left">The left object to compare</param>
-        /// <param name="right">The right object to compare</param>
-        /// <param name="parent">The parent object</param>
-        /// <param name="differences">A list of differences currently found in the tree</param>
-        /// <param name="currentDepth">The current depth of the tree recursion</param>
-        /// <param name="maxDepth">The maximum number of tree children to recurse</param>
-        /// <param name="objectTree">A hash table containing the tree that has already been traversed, to prevent recursion loops</param>
-        /// <param name="allowCompareDifferentObjects">True to allow comparing of objects with different types</param>
-        /// <param name="options">Specify the comparison options</param>
-        /// <param name="ignorePropertiesOrPaths">A list of property names or full path names to ignore</param>
+        /// <param name="name">Property or field name</param>
+        /// <param name="path">Full path to object</param>
+        /// <param name="options">Comparison options</param>
+        /// <param name="ignorePropertiesOrPaths">List of names or paths to ignore</param>
         /// <returns></returns>
-        private ICollection<Difference> GetDifferences(string propertyName, Type propertyType, TypeConverter typeConverter, object left, object right, object parent, ICollection<Difference> differences, int currentDepth, int maxDepth, HashSet<int> objectTree, bool allowCompareDifferentObjects, string path, ComparisonOptions options, ICollection<string> ignorePropertiesOrPaths = null)
+        private bool IgnoreObjectName(string name, string path, ComparisonOptions options, ICollection<string> ignorePropertiesOrPaths, IEnumerable<CustomAttributeData> attributes = null)
         {
-            if (!ignorePropertiesOrPaths.Contains(propertyName) && !ignorePropertiesOrPaths.Contains(path))
-            {
-                object leftValue = null;
-                object rightValue = null;
-                leftValue = left;
-
-                if (allowCompareDifferentObjects && rightValue != null)
-                    rightValue = GetValueForProperty(right, propertyName);
-                else
-                    rightValue = right;
-
-                if (rightValue == null && leftValue != null || leftValue == null && rightValue != null)
-                {
-                    differences.Add(new Difference((leftValue ?? rightValue).GetType(), propertyName, path, leftValue, rightValue, typeConverter));
-                    return differences;
-                }
-
-                if (leftValue == null && rightValue == null)
-                    return differences;
-
-                var isCollection = propertyType != typeof(string) && propertyType.GetInterface(nameof(IEnumerable)) != null;
-                if (isCollection && options.BitwiseHasFlag(ComparisonOptions.CompareCollections))
-                {
-                    // iterate the collection
-                    var aValueCollection = (leftValue as IEnumerable);
-                    var bValueCollection = (rightValue as IEnumerable);
-                    var bValueCollectionCount = GetCountFromEnumerable(bValueCollection);
-                    var bValueEnumerator = bValueCollection?.GetEnumerator();
-                    var arrayIndex = 0;
-                    if (aValueCollection != null)
-                    {
-                        foreach (var collectionItem in aValueCollection)
-                        {
-                            var hasValue = bValueEnumerator?.MoveNext() ?? false;
-                            leftValue = collectionItem;
-                            if (hasValue)
-                            {
-                                rightValue = bValueEnumerator?.Current;
-                                // check array element for difference
-                                if (!leftValue.GetType().IsValueType && leftValue.GetType() != typeof(string))
-                                {
-                                    differences = RecurseProperties(leftValue, rightValue, parent, differences, currentDepth, maxDepth, objectTree, allowCompareDifferentObjects, path, options, ignorePropertiesOrPaths);
-                                }
-                                else if (leftValue.GetType().IsGenericType && leftValue.GetType().GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
-                                {
-                                    // compare keys and values of a KVP
-                                    var leftKvpKey = GetValueForProperty(leftValue, "Key");
-                                    var keyType = leftKvpKey.GetType();
-                                    var leftKvpValue = GetValueForProperty(leftValue, "Value");
-                                    var valueType = leftKvpValue.GetType();
-                                    var rightKvpKey = GetValueForProperty(rightValue, "Key");
-                                    var rightKvpValue = GetValueForProperty(rightValue, "Value");
-
-                                    // compare the key
-                                    if (!keyType.IsValueType && keyType != typeof(string))
-                                        differences = RecurseProperties(leftKvpKey, rightKvpKey, leftValue, differences, currentDepth, maxDepth, objectTree, allowCompareDifferentObjects, path, options, ignorePropertiesOrPaths);
-                                    else
-                                    {
-                                        if (!IsMatch(leftKvpKey, rightKvpKey))
-                                            differences.Add(new Difference(keyType, propertyName, path, arrayIndex, leftKvpKey, rightKvpKey, typeConverter));
-                                    }
-
-                                    // compare the value
-                                    if (!valueType.IsValueType && valueType != typeof(string))
-                                        differences = RecurseProperties(leftKvpValue, rightKvpValue, leftValue, differences, currentDepth, maxDepth, objectTree, allowCompareDifferentObjects, path, options, ignorePropertiesOrPaths);
-                                    else
-                                    {
-                                        if (!IsMatch(leftValue, rightValue))
-                                            differences.Add(new Difference(valueType, propertyName, path, arrayIndex, leftKvpValue, rightKvpValue, typeConverter));
-                                    }
-                                }
-                                else
-                                {
-                                    if (!IsMatch(leftValue, rightValue))
-                                        differences.Add(new Difference(leftValue.GetType(), propertyName, path, arrayIndex, leftValue, rightValue, typeConverter));
-                                }
-                            }
-                            else
-                            {
-                                // left has a value in collection, right does not. That's a difference
-                                rightValue = null;
-                                differences.Add(new Difference(leftValue.GetType(), propertyName, path, arrayIndex, leftValue, rightValue, typeConverter));
-                            }
-                            arrayIndex++;
-                        }
-                        if(bValueCollectionCount > arrayIndex)
-                        {
-                            // right side has extra elements
-                            var rightSideExtraElements = bValueCollectionCount - arrayIndex;
-                            for (var i = 0; i < rightSideExtraElements; i++)
-                            {
-                                bValueEnumerator.MoveNext();
-                                differences.Add(new Difference(aValueCollection.GetType(), propertyName, path, arrayIndex, null, bValueEnumerator.Current, typeConverter));
-                                arrayIndex++;
-                            }
-                        }
-                    }
-                }
-                else if (!propertyType.IsValueType && propertyType != typeof(string))
-                {
-                    differences = RecurseProperties(leftValue, rightValue, leftValue, differences, currentDepth, maxDepth, objectTree, allowCompareDifferentObjects, path, options, ignorePropertiesOrPaths);
-                }
-                else
-                {
-                    if (!IsMatch(leftValue, rightValue))
-                        differences.Add(new Difference(propertyType, propertyName, path, leftValue, rightValue, typeConverter));
-                }
-            }
-            return differences;
-        }
-
-        private long GetCountFromEnumerable(IEnumerable enumerable)
-        {
-            if (enumerable == null)
-                return 0L;
-            var count = 0L;
-            var enumerableType = enumerable.GetType().GetExtendedType();
-            if (enumerableType.IsCollection)
-                return ((ICollection)enumerable).Count;
-            if (enumerableType.IsArray)
-                return ((Array)enumerable).LongLength;
-
-            var enumerator = enumerable.GetEnumerator();
-            // count the enumerable
-            foreach (var row in enumerable)
-                count++;
-            enumerator.Reset();
-            return count;
+            var ignoreByNameOrPath = ignorePropertiesOrPaths?.Contains(name) == true || ignorePropertiesOrPaths?.Contains(path) == true;
+            if (ignoreByNameOrPath)
+                return true;
+#if FEATURE_CUSTOM_ATTRIBUTES
+            if (attributes?.Any(x => _ignoreAttributes.Contains(x.AttributeType)) == true && !options.BitwiseHasFlag(ComparisonOptions.DisableIgnoreAttributes))
+#else
+            if (attributes?.Any(x => _ignoreAttributes.Contains(x.GetType())) == true  && !options.BitwiseHasFlag(ComparisonOptions.DisableIgnoreAttributes))
+#endif
+                return true;
+            return false;
         }
 
         private object GetValueForProperty(object obj, string propertyName)
@@ -413,15 +439,11 @@ namespace AnyDiff
             if (obj == null)
                 throw new ArgumentNullException(nameof(obj));
             var property = obj.GetType().GetProperties().FirstOrDefault(x => x.Name.Equals(propertyName));
+#if FEATURE_SETVALUE
             return property?.GetValue(obj);
-        }
-
-        private object GetValueForField(object obj, string propertyName)
-        {
-            if (obj == null)
-                throw new ArgumentNullException(nameof(obj));
-            var field = obj.GetType().GetFields().FirstOrDefault(x => x.Name.Equals(propertyName));
-            return field?.GetValue(obj);
+#else
+            return property?.GetValue(obj, null);
+#endif
         }
 
         private bool IsMatch(object leftValue, object rightValue)
