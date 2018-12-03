@@ -81,22 +81,5 @@ namespace AnyDiff
             var diffProvider = new DiffProvider();
             return diffProvider.ComputeDiff(left, right, maxDepth, options, ignoreProperties);
         }
-
-        /// <summary>
-        /// Compare two objects for value differences
-        /// </summary>
-        /// <param name="left">Object A</param>
-        /// <param name="right">Object B</param>
-        /// <param name="maxDepth">Maximum recursion depth</param>
-        /// <param name="allowCompareDifferentObjects">True to allow comparison of objects of a different type</param>
-        /// <param name="options">Specify the comparison options</param>
-        /// <param name="ignorePropertiesOrPaths">A list of property names or full path names to ignore</param>
-        /// <returns></returns>
-        public static ICollection<Difference> Diff(object left, object right, int maxDepth, bool allowCompareDifferentObjects, ComparisonOptions options = ComparisonOptions.All, params string[] ignorePropertiesOrPaths)
-        {
-            var diffProvider = new DiffProvider();
-            var ignorePropertiesList = new List<string>();
-            return diffProvider.ComputeDiff(left, right, maxDepth, allowCompareDifferentObjects, options, ignorePropertiesOrPaths);
-        }
     }
 }

@@ -28,5 +28,9 @@ namespace AnyDiff
         /// Specify if you want disable the ignore by attribute feature
         /// </summary>
         DisableIgnoreAttributes,
+        /// <summary>
+        /// Specify if you want to allow comparing of two differntly typed objects
+        /// </summary>
+        AllowCompareDifferentObjects,
     }
 }

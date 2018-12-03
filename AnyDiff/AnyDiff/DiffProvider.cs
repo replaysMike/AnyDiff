@@ -81,7 +81,7 @@ namespace AnyDiff
         /// <returns></returns>
         public ICollection<Difference> ComputeDiff(object left, object right, int maxDepth, ComparisonOptions options = ComparisonOptions.All, params string[] ignorePropertiesOrPaths)
         {
-            return RecurseProperties(left, right, null, new List<Difference>(), 0, maxDepth, new HashSet<int>(), false, string.Empty, options, ignorePropertiesOrPaths);
+            return RecurseProperties(left, right, null, new List<Difference>(), 0, maxDepth, new HashSet<int>(), string.Empty, options, ignorePropertiesOrPaths);
         }
 
         /// <summary>
@@ -112,22 +112,7 @@ namespace AnyDiff
                 }
                 ignorePropertiesList.Add(name);
             }
-            return RecurseProperties(left, right, null, new List<Difference>(), 0, maxDepth, new HashSet<int>(), false, string.Empty, options, ignorePropertiesList);
-        }
-
-        /// <summary>
-        /// Compare two objects for value differences
-        /// </summary>
-        /// <param name="left">Object A</param>
-        /// <param name="right">Object B</param>
-        /// <param name="maxDepth">Maximum recursion depth</param>
-        /// <param name="allowCompareDifferentObjects">True to allow comparison of objects of a different type</param>
-        /// <param name="options">Specify the comparison options</param>
-        /// <param name="ignorePropertiesOrPaths">A list of property names or full path names to ignore</param>
-        /// <returns></returns>
-        public ICollection<Difference> ComputeDiff(object left, object right, int maxDepth, bool allowCompareDifferentObjects, ComparisonOptions options = ComparisonOptions.All, params string[] ignorePropertiesOrPaths)
-        {
-            return RecurseProperties(left, right, null, new List<Difference>(), 0, maxDepth, new HashSet<int>(), allowCompareDifferentObjects, string.Empty, options, ignorePropertiesOrPaths);
+            return RecurseProperties(left, right, null, new List<Difference>(), 0, maxDepth, new HashSet<int>(), string.Empty, options, ignorePropertiesList);
         }
 
         /// <summary>
@@ -144,12 +129,12 @@ namespace AnyDiff
         /// <param name="options">Specify the comparison options</param>
         /// <param name="ignorePropertiesOrPaths">A list of property names or full path names to ignore</param>
         /// <returns></returns>
-        private ICollection<Difference> RecurseProperties(object left, object right, object parent, ICollection<Difference> differences, int currentDepth, int maxDepth, HashSet<int> objectTree, bool allowCompareDifferentObjects, string path, ComparisonOptions options, ICollection<string> ignorePropertiesOrPaths = null)
+        private ICollection<Difference> RecurseProperties(object left, object right, object parent, ICollection<Difference> differences, int currentDepth, int maxDepth, HashSet<int> objectTree, string path, ComparisonOptions options, ICollection<string> ignorePropertiesOrPaths = null)
         {
             if (IgnoreObjectName(null, path, options, ignorePropertiesOrPaths))
                 return differences;
 
-            if (!allowCompareDifferentObjects
+            if (!options.BitwiseHasFlag(ComparisonOptions.AllowCompareDifferentObjects)
                 && left != null && right != null
                 && left?.GetType() != right?.GetType())
                 throw new ArgumentException("Objects Left and Right must be of the same type.");
@@ -222,7 +207,7 @@ namespace AnyDiff
                 {
                     // catch any exceptions accessing the property
                 }
-                differences = GetDifferences(property.Name, property.Type, GetTypeConverter(property), leftValue, rightValue, parent, differences, currentDepth, maxDepth, objectTree, allowCompareDifferentObjects, path, options, ignorePropertiesOrPaths);
+                differences = GetDifferences(property.Name, property.Type, GetTypeConverter(property), leftValue, rightValue, parent, differences, currentDepth, maxDepth, objectTree, path, options, ignorePropertiesOrPaths);
             }
             foreach (var field in fields)
             {
@@ -236,7 +221,7 @@ namespace AnyDiff
                 object rightValue = null;
                 if (right != null)
                     rightValue = right.GetFieldValue(field);
-                differences = GetDifferences(field.Name, field.Type, GetTypeConverter(field), leftValue, rightValue, parent, differences, currentDepth, maxDepth, objectTree, allowCompareDifferentObjects, path, options, ignorePropertiesOrPaths);
+                differences = GetDifferences(field.Name, field.Type, GetTypeConverter(field), leftValue, rightValue, parent, differences, currentDepth, maxDepth, objectTree, path, options, ignorePropertiesOrPaths);
             }
 
             return differences;
@@ -255,11 +240,10 @@ namespace AnyDiff
         /// <param name="currentDepth">The current depth of the tree recursion</param>
         /// <param name="maxDepth">The maximum number of tree children to recurse</param>
         /// <param name="objectTree">A hash table containing the tree that has already been traversed, to prevent recursion loops</param>
-        /// <param name="allowCompareDifferentObjects">True to allow comparing of objects with different types</param>
         /// <param name="options">Specify the comparison options</param>
         /// <param name="ignorePropertiesOrPaths">A list of property names or full path names to ignore</param>
         /// <returns></returns>
-        private ICollection<Difference> GetDifferences(string propertyName, Type propertyType, TypeConverter typeConverter, object left, object right, object parent, ICollection<Difference> differences, int currentDepth, int maxDepth, HashSet<int> objectTree, bool allowCompareDifferentObjects, string path, ComparisonOptions options, ICollection<string> ignorePropertiesOrPaths = null)
+        private ICollection<Difference> GetDifferences(string propertyName, Type propertyType, TypeConverter typeConverter, object left, object right, object parent, ICollection<Difference> differences, int currentDepth, int maxDepth, HashSet<int> objectTree, string path, ComparisonOptions options, ICollection<string> ignorePropertiesOrPaths = null)
         {
             if (IgnoreObjectName(propertyName, path, options, ignorePropertiesOrPaths))
                 return differences;
@@ -268,7 +252,7 @@ namespace AnyDiff
             object rightValue = null;
             leftValue = left;
 
-            if (allowCompareDifferentObjects && rightValue != null)
+            if (options.BitwiseHasFlag(ComparisonOptions.AllowCompareDifferentObjects) && rightValue != null)
                 rightValue = GetValueForProperty(right, propertyName);
             else
                 rightValue = right;
@@ -303,7 +287,7 @@ namespace AnyDiff
                             // check array element for difference
                             if (!leftValue.GetType().IsValueType && leftValue.GetType() != typeof(string))
                             {
-                                differences = RecurseProperties(leftValue, rightValue, parent, differences, currentDepth, maxDepth, objectTree, allowCompareDifferentObjects, path, options, ignorePropertiesOrPaths);
+                                differences = RecurseProperties(leftValue, rightValue, parent, differences, currentDepth, maxDepth, objectTree, path, options, ignorePropertiesOrPaths);
                             }
                             else if (leftValue.GetType().IsGenericType && leftValue.GetType().GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
                             {
@@ -317,7 +301,7 @@ namespace AnyDiff
 
                                 // compare the key
                                 if (!keyType.IsValueType && keyType != typeof(string))
-                                    differences = RecurseProperties(leftKvpKey, rightKvpKey, leftValue, differences, currentDepth, maxDepth, objectTree, allowCompareDifferentObjects, path, options, ignorePropertiesOrPaths);
+                                    differences = RecurseProperties(leftKvpKey, rightKvpKey, leftValue, differences, currentDepth, maxDepth, objectTree, path, options, ignorePropertiesOrPaths);
                                 else
                                 {
                                     if (!IsMatch(leftKvpKey, rightKvpKey))
@@ -326,7 +310,7 @@ namespace AnyDiff
 
                                 // compare the value
                                 if (!valueType.IsValueType && valueType != typeof(string))
-                                    differences = RecurseProperties(leftKvpValue, rightKvpValue, leftValue, differences, currentDepth, maxDepth, objectTree, allowCompareDifferentObjects, path, options, ignorePropertiesOrPaths);
+                                    differences = RecurseProperties(leftKvpValue, rightKvpValue, leftValue, differences, currentDepth, maxDepth, objectTree, path, options, ignorePropertiesOrPaths);
                                 else
                                 {
                                     if (!IsMatch(leftValue, rightValue))
@@ -362,7 +346,7 @@ namespace AnyDiff
             }
             else if (!propertyType.IsValueType && propertyType != typeof(string))
             {
-                differences = RecurseProperties(leftValue, rightValue, leftValue, differences, currentDepth, maxDepth, objectTree, allowCompareDifferentObjects, path, options, ignorePropertiesOrPaths);
+                differences = RecurseProperties(leftValue, rightValue, leftValue, differences, currentDepth, maxDepth, objectTree, path, options, ignorePropertiesOrPaths);
             }
             else
             {
