@@ -269,6 +269,7 @@ namespace AnyDiff
             var isCollection = propertyType != typeof(string) && propertyType.GetInterface(nameof(IEnumerable)) != null;
             if (isCollection && options.BitwiseHasFlag(ComparisonOptions.CompareCollections))
             {
+                var genericArguments = propertyType.GetGenericArguments();
                 // iterate the collection
                 var aValueCollection = (leftValue as IEnumerable);
                 var bValueCollection = (rightValue as IEnumerable);
@@ -293,28 +294,29 @@ namespace AnyDiff
                             {
                                 // compare keys and values of a KVP
                                 var leftKvpKey = GetValueForProperty(leftValue, "Key");
-                                var keyType = leftKvpKey.GetType();
                                 var leftKvpValue = GetValueForProperty(leftValue, "Value");
-                                var valueType = leftKvpValue.GetType();
                                 var rightKvpKey = GetValueForProperty(rightValue, "Key");
                                 var rightKvpValue = GetValueForProperty(rightValue, "Value");
 
+                                Type leftKeyType = leftKvpKey?.GetType() ?? genericArguments.First();
+                                Type leftValueType = leftKvpValue?.GetType() ?? genericArguments.Skip(1).First();
+
                                 // compare the key
-                                if (!keyType.IsValueType && keyType != typeof(string))
+                                if (leftKvpKey != null && !leftKeyType.IsValueType && leftKeyType != typeof(string))
                                     differences = RecurseProperties(leftKvpKey, rightKvpKey, leftValue, differences, currentDepth, maxDepth, objectTree, path, options, ignorePropertiesOrPaths);
                                 else
                                 {
                                     if (!IsMatch(leftKvpKey, rightKvpKey))
-                                        differences.Add(new Difference(keyType, propertyName, path, arrayIndex, leftKvpKey, rightKvpKey, typeConverter));
+                                        differences.Add(new Difference(leftKeyType, propertyName, path, arrayIndex, leftKvpKey, rightKvpKey, typeConverter));
                                 }
 
                                 // compare the value
-                                if (!valueType.IsValueType && valueType != typeof(string))
+                                if (leftKvpValue != null && !leftValueType.IsValueType && leftValueType != typeof(string))
                                     differences = RecurseProperties(leftKvpValue, rightKvpValue, leftValue, differences, currentDepth, maxDepth, objectTree, path, options, ignorePropertiesOrPaths);
                                 else
                                 {
                                     if (!IsMatch(leftValue, rightValue))
-                                        differences.Add(new Difference(valueType, propertyName, path, arrayIndex, leftKvpValue, rightKvpValue, typeConverter));
+                                        differences.Add(new Difference(leftValueType, propertyName, path, arrayIndex, leftKvpValue, rightKvpValue, typeConverter));
                                 }
                             }
                             else
