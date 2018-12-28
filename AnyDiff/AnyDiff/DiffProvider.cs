@@ -171,9 +171,6 @@ namespace AnyDiff
             if (maxDepth > 0 && currentDepth >= maxDepth)
                 return differences;
 
-            if (ignorePropertiesOrPaths == null)
-                ignorePropertiesOrPaths = new List<string>();
-
             var typeSupport = new ExtendedType(left != null ? left.GetType() : right.GetType());
             if (typeSupport.Attributes.Any(x => _ignoreAttributes.Contains(x)))
                 return differences;

@@ -59,7 +59,7 @@ namespace AnyDiff
         /// <param name="leftValue"></param>
         /// <param name="rightValue"></param>
         /// <param name="converter"></param>
-        public Difference(Type propertyType, string property, string path, object leftValue, object rightValue, TypeConverter converter = null)
+        public Difference(Type propertyType, string property, string path, object leftValue, object rightValue, TypeConverter converter)
         {
             PropertyType = propertyType;
             if (Nullable.GetUnderlyingType(propertyType) == null && (leftValue == null || rightValue == null))

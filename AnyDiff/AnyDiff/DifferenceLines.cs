@@ -60,12 +60,20 @@ namespace AnyDiff
         /// <summary>
         /// Details of one difference.
         /// </summary>
-        public struct Item
+        public struct Item : IEquatable<Item>
         {
             public int StartA { get; set; }
             public int StartB { get; set; }
             public int DeletedA { get; set; }
             public int InsertedB { get; set; }
+
+            public bool Equals(Item other)
+            {
+                return StartA == other.StartA 
+                    && StartB == other.StartB 
+                    && DeletedA == other.DeletedA 
+                    && InsertedB == other.InsertedB;
+            }
         }
 
         /// <summary>
