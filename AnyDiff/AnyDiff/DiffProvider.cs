@@ -237,7 +237,7 @@ namespace AnyDiff
             }
             foreach (var field in fields)
             {
-                path = $"{rootPath}.{field.Name}";
+                localPath = $"{rootPath}.{field.Name}";
                 if (IgnoreObjectName(field.Name, localPath, options, ignorePropertiesOrPaths, field.CustomAttributes))
                     continue;
                 var fieldTypeSupport = new ExtendedType(field.Type);
@@ -388,7 +388,7 @@ namespace AnyDiff
             return differences;
         }
 
-        private long GetCountFromEnumerable(IEnumerable enumerable)
+        private static long GetCountFromEnumerable(IEnumerable enumerable)
         {
             if (enumerable == null)
                 return 0L;
@@ -407,17 +407,17 @@ namespace AnyDiff
             return count;
         }
 
-        private TypeConverter GetTypeConverter(PropertyInfo property)
+        private static TypeConverter GetTypeConverter(PropertyInfo property)
         {
             return GetTypeConverter(property.GetCustomAttributes(typeof(TypeConverterAttribute), false).FirstOrDefault() as TypeConverterAttribute);
         }
 
-        private TypeConverter GetTypeConverter(FieldInfo property)
+        private static TypeConverter GetTypeConverter(FieldInfo property)
         {
             return GetTypeConverter(property.GetCustomAttributes(typeof(TypeConverterAttribute), false).FirstOrDefault() as TypeConverterAttribute);
         }
 
-        private TypeConverter GetTypeConverter(TypeConverterAttribute attribute)
+        private static TypeConverter GetTypeConverter(TypeConverterAttribute attribute)
         {
             if (attribute != null)
             {
@@ -449,7 +449,7 @@ namespace AnyDiff
             return false;
         }
 
-        private object GetValueForProperty(object obj, string propertyName)
+        private static object GetValueForProperty(object obj, string propertyName)
         {
             if (obj == null)
                 throw new ArgumentNullException(nameof(obj));
