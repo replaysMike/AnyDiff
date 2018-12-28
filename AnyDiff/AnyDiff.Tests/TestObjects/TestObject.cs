@@ -41,6 +41,11 @@ namespace AnyDiff.Tests.TestObjects
         public Guid GuidValue { get; set; }
         public Guid? NullableGuidValue { get; set; }
 
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
         public override bool Equals(object obj)
         {
             var basicObject = (TestObject)obj;
