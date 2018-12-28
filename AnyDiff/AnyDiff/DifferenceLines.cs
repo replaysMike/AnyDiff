@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace AnyDiff
@@ -15,9 +16,9 @@ namespace AnyDiff
         /// </summary>
         public class LineDifferenceResult
         {
-            public ICollection<string> Additions = new List<string>();
-            public ICollection<string> Deletions = new List<string>();
-            public ICollection<string> Unchanged = new List<string>();
+            public ICollection<string> Additions { get; } = new List<string>();
+            public ICollection<string> Deletions { get; } = new List<string>();
+            public ICollection<string> Unchanged { get; } = new List<string>();
 
             /// <summary>
             /// Result of a Difference Lines operation
@@ -38,11 +39,11 @@ namespace AnyDiff
                         Unchanged.Add(bLines[n]);
                         n++;
                     }
-                    for (var m = 0; m < aItem.deletedA; m++)
+                    for (var m = 0; m < aItem.DeletedA; m++)
                     {
                         Deletions.Add(aLines[aItem.StartA + m]);
                     }
-                    while (n < aItem.StartB + aItem.insertedB)
+                    while (n < aItem.StartB + aItem.InsertedB)
                     {
                         Additions.Add(bLines[n]);
                         n++;
@@ -61,10 +62,10 @@ namespace AnyDiff
         /// </summary>
         public struct Item
         {
-            public int StartA;
-            public int StartB;
-            public int deletedA;
-            public int insertedB;
+            public int StartA { get; set; }
+            public int StartB { get; set; }
+            public int DeletedA { get; set; }
+            public int InsertedB { get; set; }
         }
 
         /// <summary>
@@ -113,7 +114,7 @@ namespace AnyDiff
 
             h = null; // free up hashtable memory (maybe)
 
-            LCS(DataA, 0, DataA._length, DataB, 0, DataB._length);
+            LCS(DataA, 0, DataA.Length, DataB, 0, DataB.Length);
             return new LineDifferenceResult(CreateDiffs(DataA, DataB), TextA, TextB);
         }
 
@@ -132,7 +133,7 @@ namespace AnyDiff
             // The B-Version of the data (modified data) to be compared.
             var DataB = new DiffData(ArrayB);
 
-            LCS(DataA, 0, DataA._length, DataB, 0, DataB._length);
+            LCS(DataA, 0, DataA.Length, DataB, 0, DataB.Length);
             return CreateDiffs(DataA, DataB);
         }
 
@@ -142,129 +143,132 @@ namespace AnyDiff
         /// so further work can work only with simple numbers.
         /// </summary>
         /// <param name="aText">the input text</param>
-        /// <param name="h">This extern initialized hashtable is used for storing all ever used textlines.</param>
+        /// <param name="hashTable">This extern initialized hashtable is used for storing all ever used textlines.</param>
         /// <param name="trimSpace">ignore leading and trailing space characters</param>
+        /// <param name="ignoreSpace">True to ignore whitespace</param>
+        /// <param name="ignoreCase">True to ignore case</param>
         /// <returns>a array of integers.</returns>
-        private static int[] DiffCodes(string aText, Hashtable h, bool trimSpace, bool ignoreSpace, bool ignoreCase)
+        private static int[] DiffCodes(string aText, Hashtable hashTable, bool trimSpace, bool ignoreSpace, bool ignoreCase)
         {
             // get all codes of the text
-            string[] Lines;
-            int[] Codes;
-            var lastUsedCode = h.Count;
-            object aCode;
-            string s;
+            var text = aText;
+            string[] lines;
+            int[] codes;
+            var lastUsedCode = hashTable.Count;
+            object charCode;
+            string str;
 
             // strip off all cr, only use lf as textline separator.
-            aText = aText.Replace("\r", "");
-            Lines = aText.Split('\n');
+            text = text.Replace("\r", "");
+            lines = text.Split('\n');
 
-            Codes = new int[Lines.Length];
+            codes = new int[lines.Length];
 
-            for (var i = 0; i < Lines.Length; ++i)
+            for (var i = 0; i < lines.Length; ++i)
             {
-                s = Lines[i];
+                str = lines[i];
                 if (trimSpace)
-                    s = s.Trim();
+                    str = str.Trim();
 
                 if (ignoreSpace)
                 {
-                    s = Regex.Replace(s, "\\s+", " ");
+                    str = Regex.Replace(str, "\\s+", " ");
                 }
 
                 if (ignoreCase)
-                    s = s.ToLower();
+                    str = str.ToLower(CultureInfo.InvariantCulture);
 
-                aCode = h[s];
-                if (aCode == null)
+                charCode = hashTable[str];
+                if (charCode == null)
                 {
                     lastUsedCode++;
-                    h[s] = lastUsedCode;
-                    Codes[i] = lastUsedCode;
+                    hashTable[str] = lastUsedCode;
+                    codes[i] = lastUsedCode;
                 }
                 else
                 {
-                    Codes[i] = (int)aCode;
+                    codes[i] = (int)charCode;
                 }
             }
-            return (Codes);
+            return (codes);
         }
 
 
         /// <summary>
         /// This is the algorithm to find the Shortest Middle Snake (SMS).
         /// </summary>
-        /// <param name="DataA">sequence A</param>
-        /// <param name="LowerA">lower bound of the actual range in DataA</param>
-        /// <param name="UpperA">upper bound of the actual range in DataA (exclusive)</param>
-        /// <param name="DataB">sequence B</param>
-        /// <param name="LowerB">lower bound of the actual range in DataB</param>
-        /// <param name="UpperB">upper bound of the actual range in DataB (exclusive)</param>
+        /// <param name="dataLeft">sequence A</param>
+        /// <param name="lowerLeft">lower bound of the actual range in DataA</param>
+        /// <param name="upperLeft">upper bound of the actual range in DataA (exclusive)</param>
+        /// <param name="dataRight">sequence B</param>
+        /// <param name="lowerRight">lower bound of the actual range in DataB</param>
+        /// <param name="upperRight">upper bound of the actual range in DataB (exclusive)</param>
         /// <returns>a MiddleSnakeData record containing x,y and u,v</returns>
-        private static SMSRD SMS(DiffData DataA, int LowerA, int UpperA, DiffData DataB, int LowerB, int UpperB)
+        private static SMSRD SMS(DiffData dataLeft, int lowerLeft, int upperLeft, DiffData dataRight, int lowerRight, int upperRight)
         {
             SMSRD ret;
-            var MAX = DataA._length + DataB._length + 1;
+            var max = dataLeft.Length + dataRight.Length + 1;
 
-            var DownK = LowerA - LowerB; // the k-line to start the forward search
-            var UpK = UpperA - UpperB; // the k-line to start the reverse search
+            var downK = lowerLeft - lowerRight; // the k-line to start the forward search
+            var upK = upperLeft - upperRight; // the k-line to start the reverse search
 
-            var Delta = (UpperA - LowerA) - (UpperB - LowerB);
-            var oddDelta = (Delta & 1) != 0;
+            var delta = (upperLeft - lowerLeft) - (upperRight - lowerRight);
+            var oddDelta = (delta & 1) != 0;
 
             /// vector for the (0,0) to (x,y) search
-            var DownVector = new int[2 * MAX + 2];
+            var downVector = new int[2 * max + 2];
 
             /// vector for the (u,v) to (N,M) search
-            var UpVector = new int[2 * MAX + 2];
+            var upVector = new int[2 * max + 2];
 
             // The vectors in the publication accepts negative indexes. the vectors implemented here are 0-based
             // and are access using a specific offset: UpOffset UpVector and DownOffset for DownVektor
-            var DownOffset = MAX - DownK;
-            var UpOffset = MAX - UpK;
+            var downOffset = max - downK;
+            var upOffset = max - upK;
 
-            var MaxD = ((UpperA - LowerA + UpperB - LowerB) / 2) + 1;
+            var MaxD = ((upperLeft - lowerLeft + upperRight - lowerRight) / 2) + 1;
 
             // init vectors
-            DownVector[DownOffset + DownK + 1] = LowerA;
-            UpVector[UpOffset + UpK - 1] = UpperA;
+            downVector[downOffset + downK + 1] = lowerLeft;
+            upVector[upOffset + upK - 1] = upperLeft;
 
-            for (var D = 0; D <= MaxD; D++)
+            for (var d = 0; d <= MaxD; d++)
             {
 
                 // Extend the forward path.
-                for (var k = DownK - D; k <= DownK + D; k += 2)
+                for (var k = downK - d; k <= downK + d; k += 2)
                 {
                     // Debug.Write(0, "SMS", "extend forward path " + k.ToString());
 
                     // find the only or better starting point
                     int x, y;
-                    if (k == DownK - D)
+                    if (k == downK - d)
                     {
-                        x = DownVector[DownOffset + k + 1]; // down
+                        x = downVector[downOffset + k + 1]; // down
                     }
                     else
                     {
-                        x = DownVector[DownOffset + k - 1] + 1; // a step to the right
-                        if ((k < DownK + D) && (DownVector[DownOffset + k + 1] >= x))
-                            x = DownVector[DownOffset + k + 1]; // down
+                        x = downVector[downOffset + k - 1] + 1; // a step to the right
+                        if ((k < downK + d) && (downVector[downOffset + k + 1] >= x))
+                            x = downVector[downOffset + k + 1]; // down
                     }
                     y = x - k;
 
                     // find the end of the furthest reaching forward D-path in diagonal k.
-                    while ((x < UpperA) && (y < UpperB) && (DataA._data[x] == DataB._data[y]))
+                    while ((x < upperLeft) && (y < upperRight) && (dataLeft.Data[x] == dataRight.Data[y]))
                     {
                         x++;
                         y++;
                     }
-                    DownVector[DownOffset + k] = x;
+                    downVector[downOffset + k] = x;
 
                     // overlap ?
-                    if (oddDelta && (UpK - D < k) && (k < UpK + D))
+                    if (oddDelta && (upK - d < k) && (k < upK + d))
                     {
-                        if (UpVector[UpOffset + k] <= DownVector[DownOffset + k])
+                        if (upVector[upOffset + k] <= downVector[downOffset + k])
                         {
-                            ret._x = DownVector[DownOffset + k];
-                            ret._y = DownVector[DownOffset + k] - k;
+                            ret._x = downVector[downOffset + k];
+                            ret._y = downVector[downOffset + k] - k;
                             return (ret);
                         }
                     }
@@ -272,38 +276,38 @@ namespace AnyDiff
                 }
 
                 // Extend the reverse path.
-                for (var k = UpK - D; k <= UpK + D; k += 2)
+                for (var k = upK - d; k <= upK + d; k += 2)
                 {
                     // Debug.Write(0, "SMS", "extend reverse path " + k.ToString());
 
                     // find the only or better starting point
                     int x, y;
-                    if (k == UpK + D)
+                    if (k == upK + d)
                     {
-                        x = UpVector[UpOffset + k - 1]; // up
+                        x = upVector[upOffset + k - 1]; // up
                     }
                     else
                     {
-                        x = UpVector[UpOffset + k + 1] - 1; // left
-                        if ((k > UpK - D) && (UpVector[UpOffset + k - 1] < x))
-                            x = UpVector[UpOffset + k - 1]; // up
+                        x = upVector[upOffset + k + 1] - 1; // left
+                        if ((k > upK - d) && (upVector[upOffset + k - 1] < x))
+                            x = upVector[upOffset + k - 1]; // up
                     } // if
                     y = x - k;
 
-                    while ((x > LowerA) && (y > LowerB) && (DataA._data[x - 1] == DataB._data[y - 1]))
+                    while ((x > lowerLeft) && (y > lowerRight) && (dataLeft.Data[x - 1] == dataRight.Data[y - 1]))
                     {
                         x--;
                         y--; // diagonal
                     }
-                    UpVector[UpOffset + k] = x;
+                    upVector[upOffset + k] = x;
 
                     // overlap ?
-                    if (!oddDelta && (DownK - D <= k) && (k <= DownK + D))
+                    if (!oddDelta && (downK - d <= k) && (k <= downK + d))
                     {
-                        if (UpVector[UpOffset + k] <= DownVector[DownOffset + k])
+                        if (upVector[upOffset + k] <= downVector[downOffset + k])
                         {
-                            ret._x = DownVector[DownOffset + k];
-                            ret._y = DownVector[DownOffset + k] - k;
+                            ret._x = downVector[downOffset + k];
+                            ret._y = downVector[downOffset + k] - k;
                             // ret.u = UpVector[UpOffset + k];     // 2002.09.20: no need for 2 points 
                             // ret.v = UpVector[UpOffset + k] - k;
                             return (ret);
@@ -314,7 +318,7 @@ namespace AnyDiff
 
             }
 
-            throw new ApplicationException("the algorithm should never come here.");
+            throw new InvalidOperationException("Unknown error occurred.");
         }
 
 
@@ -324,50 +328,50 @@ namespace AnyDiff
         /// The published algorithm passes recursively parts of the A and B sequences.
         /// To avoid copying these arrays the lower and upper bounds are passed while the sequences stay constant.
         /// </summary>
-        /// <param name="DataA">sequence A</param>
-        /// <param name="LowerA">lower bound of the actual range in DataA</param>
-        /// <param name="UpperA">upper bound of the actual range in DataA (exclusive)</param>
-        /// <param name="DataB">sequence B</param>
-        /// <param name="LowerB">lower bound of the actual range in DataB</param>
-        /// <param name="UpperB">upper bound of the actual range in DataB (exclusive)</param>
-        private static void LCS(DiffData DataA, int LowerA, int UpperA, DiffData DataB, int LowerB, int UpperB)
+        /// <param name="dataLeft">sequence A</param>
+        /// <param name="lowerLeft">lower bound of the actual range in DataA</param>
+        /// <param name="upperLeft">upper bound of the actual range in DataA (exclusive)</param>
+        /// <param name="dataRight">sequence B</param>
+        /// <param name="lowerRight">lower bound of the actual range in DataB</param>
+        /// <param name="upperRight">upper bound of the actual range in DataB (exclusive)</param>
+        private static void LCS(DiffData dataLeft, int lowerLeft, int upperLeft, DiffData dataRight, int lowerRight, int upperRight)
         {
             // Fast walkthrough equal lines at the start
-            while (LowerA < UpperA && LowerB < UpperB && DataA._data[LowerA] == DataB._data[LowerB])
+            while (lowerLeft < upperLeft && lowerRight < upperRight && dataLeft.Data[lowerLeft] == dataRight.Data[lowerRight])
             {
-                LowerA++;
-                LowerB++;
+                lowerLeft++;
+                lowerRight++;
             }
 
             // Fast walkthrough equal lines at the end
-            while (LowerA < UpperA && LowerB < UpperB && DataA._data[UpperA - 1] == DataB._data[UpperB - 1])
+            while (lowerLeft < upperLeft && lowerRight < upperRight && dataLeft.Data[upperLeft - 1] == dataRight.Data[upperRight - 1])
             {
-                --UpperA;
-                --UpperB;
+                --upperLeft;
+                --upperRight;
             }
 
-            if (LowerA == UpperA)
+            if (lowerLeft == upperLeft)
             {
                 // mark as inserted lines.
-                while (LowerB < UpperB)
-                    DataB._modified[LowerB++] = true;
+                while (lowerRight < upperRight)
+                    dataRight.Modified[lowerRight++] = true;
 
             }
-            else if (LowerB == UpperB)
+            else if (lowerRight == upperRight)
             {
                 // mark as deleted lines.
-                while (LowerA < UpperA)
-                    DataA._modified[LowerA++] = true;
+                while (lowerLeft < upperLeft)
+                    dataLeft.Modified[lowerLeft++] = true;
 
             }
             else
             {
                 // Find the middle snakea and length of an optimal path for A and B
-                SMSRD smsrd = SMS(DataA, LowerA, UpperA, DataB, LowerB, UpperB);
+                var smsrd = SMS(dataLeft, lowerLeft, upperLeft, dataRight, lowerRight, upperRight);
 
                 // The path is from LowerX to (x,y) and (x,y) ot UpperX
-                LCS(DataA, LowerA, smsrd._x, DataB, LowerB, smsrd._y);
-                LCS(DataA, smsrd._x, UpperA, DataB, smsrd._y, UpperB);  // 2002.09.20: no need for 2 points 
+                LCS(dataLeft, lowerLeft, smsrd._x, dataRight, lowerRight, smsrd._y);
+                LCS(dataLeft, smsrd._x, upperLeft, dataRight, smsrd._y, upperRight);  // 2002.09.20: no need for 2 points 
             }
         }
 
@@ -377,54 +381,54 @@ namespace AnyDiff
         /// producing an edit script in forward order.  
         /// </summary>
         /// dynamic array
-        private static Item[] CreateDiffs(DiffData DataA, DiffData DataB)
+        private static Item[] CreateDiffs(DiffData dataLeft, DiffData dataRight)
         {
-            var a = new ArrayList();
+            var aList = new ArrayList();
             Item aItem;
             Item[] result;
 
-            int StartA, StartB;
-            int LineA, LineB;
+            int startLeft, startRight;
+            int lineLeft, lineRight;
 
-            LineA = 0;
-            LineB = 0;
-            while (LineA < DataA._length || LineB < DataB._length)
+            lineLeft = 0;
+            lineRight = 0;
+            while (lineLeft < dataLeft.Length || lineRight < dataRight.Length)
             {
-                if ((LineA < DataA._length) && (!DataA._modified[LineA])
-                    && (LineB < DataB._length) && (!DataB._modified[LineB]))
+                if ((lineLeft < dataLeft.Length) && (!dataLeft.Modified[lineLeft])
+                    && (lineRight < dataRight.Length) && (!dataRight.Modified[lineRight]))
                 {
                     // equal lines
-                    LineA++;
-                    LineB++;
+                    lineLeft++;
+                    lineRight++;
 
                 }
                 else
                 {
                     // maybe deleted and/or inserted lines
-                    StartA = LineA;
-                    StartB = LineB;
+                    startLeft = lineLeft;
+                    startRight = lineRight;
 
-                    while (LineA < DataA._length && (LineB >= DataB._length || DataA._modified[LineA]))
-                        LineA++;
+                    while (lineLeft < dataLeft.Length && (lineRight >= dataRight.Length || dataLeft.Modified[lineLeft]))
+                        lineLeft++;
 
-                    while (LineB < DataB._length && (LineA >= DataA._length || DataB._modified[LineB]))
-                        LineB++;
+                    while (lineRight < dataRight.Length && (lineLeft >= dataLeft.Length || dataRight.Modified[lineRight]))
+                        lineRight++;
 
-                    if ((StartA < LineA) || (StartB < LineB))
+                    if ((startLeft < lineLeft) || (startRight < lineRight))
                     {
                         // store a new difference-item
                         aItem = new Item();
-                        aItem.StartA = StartA;
-                        aItem.StartB = StartB;
-                        aItem.deletedA = LineA - StartA;
-                        aItem.insertedB = LineB - StartB;
-                        a.Add(aItem);
+                        aItem.StartA = startLeft;
+                        aItem.StartB = startRight;
+                        aItem.DeletedA = lineLeft - startLeft;
+                        aItem.InsertedB = lineRight - startRight;
+                        aList.Add(aItem);
                     }
                 }
             }
 
-            result = new Item[a.Count];
-            a.CopyTo(result);
+            result = new Item[aList.Count];
+            aList.CopyTo(result);
 
             return (result);
         }
@@ -436,17 +440,17 @@ namespace AnyDiff
         {
 
             /// <summary>Number of elements (lines).</summary>
-            internal int _length;
+            internal int Length { get; set; }
 
             /// <summary>Buffer of numbers that will be compared.</summary>
-            internal int[] _data;
+            internal int[] Data { get; set; }
 
             /// <summary>
             /// Array of booleans that flag for modified data.
             /// This is the result of the diff.
             /// This means deletedA in the first Data or inserted in the second Data.
             /// </summary>
-            internal bool[] _modified;
+            internal bool[] Modified { get; set; }
 
             /// <summary>
             /// Initialize the Diff-Data buffer.
@@ -454,9 +458,9 @@ namespace AnyDiff
             /// <param name="data">reference to the buffer</param>
             internal DiffData(int[] initData)
             {
-                _data = initData;
-                _length = initData.Length;
-                _modified = new bool[_length + 2];
+                Data = initData;
+                Length = initData.Length;
+                Modified = new bool[Length + 2];
             }
 
         }

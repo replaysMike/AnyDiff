@@ -9,15 +9,7 @@ namespace AnyDiff
     /// </summary>
     public class Difference
     {
-        public string Path { get; set; }
-        public string Property { get; set; }
-        public int? ArrayIndex { get; set; }
-        public Type PropertyType { get; set; }
-        public TypeConverter TypeConverter { get; set; }
-        public object LeftValue { get; set; }
-        public object RightValue { get; set; }
-        public object Delta { get; set; }
-        public Dictionary<Type, Func<object, object, object>> _differenceByType = new Dictionary<Type, Func<object, object, object>> {
+        private readonly Dictionary<Type, Func<object, object, object>> _differenceByType = new Dictionary<Type, Func<object, object, object>> {
                 { typeof(byte), (leftValue, rightValue) => (byte)rightValue - (byte)leftValue },
                 { typeof(byte?), (leftValue, rightValue) => ((byte?)rightValue ?? 0) - ((byte?)leftValue ?? 0) },
                 { typeof(sbyte), (leftValue, rightValue) => (sbyte)rightValue - (sbyte)leftValue },
@@ -49,6 +41,15 @@ namespace AnyDiff
                 { typeof(Guid?), (leftValue, rightValue) => { return CompareStrings(((Guid?)leftValue)?.ToString(), ((Guid?)rightValue)?.ToString()); } },
                 { typeof(string), (leftValue, rightValue) => { return CompareStrings((string)leftValue, (string)rightValue); } },
             };
+
+        public string Path { get; }
+        public string Property { get; }
+        public int? ArrayIndex { get; }
+        public Type PropertyType { get; }
+        public TypeConverter TypeConverter { get; }
+        public object LeftValue { get; }
+        public object RightValue { get; }
+        public object Delta { get; }
 
         /// <summary>
         /// Calculate the difference between two objects
@@ -85,7 +86,7 @@ namespace AnyDiff
                     if (rightValue != null)
                     {
                         rightValue = TypeConverter.ConvertFrom(rightValue);
-                        PropertyType = leftValue.GetType();
+                        PropertyType = rightValue.GetType();
                     }
                 }
             }
@@ -147,7 +148,6 @@ namespace AnyDiff
             // we will opt to use word comparison for comparing strings
             var wordDifferences = DifferenceWords.DiffWords(leftValue, rightValue);
 
-            //var lineDifferences = DifferenceLines.DiffLines(leftValue, rightValue, true, true, false);
             return wordDifferences;
         }
 

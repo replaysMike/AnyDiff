@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace AnyDiff
 {
@@ -11,17 +12,17 @@ namespace AnyDiff
     {
         public class WordDifferences
         {
-            public ICollection<string> Additions = new List<string>();
-            public ICollection<string> Deletions = new List<string>();
+            public ICollection<string> Additions { get; set; } = new List<string>();
+            public ICollection<string> Deletions { get; set; } = new List<string>();
 
             public override string ToString()
             {
-                var str = "";
+                var str = new StringBuilder();
                 foreach (var addition in Additions)
-                    str += "+" + addition + Environment.NewLine;
+                    str.Append("+" + addition + Environment.NewLine);
                 foreach (var deletion in Deletions)
-                    str += "-" + deletion + Environment.NewLine;
-                return str;
+                    str.Append("-" + deletion + Environment.NewLine);
+                return str.ToString();
             }
         }
 
