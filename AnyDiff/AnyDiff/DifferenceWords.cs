@@ -31,15 +31,26 @@ namespace AnyDiff
         /// </summary>
         /// <param name="leftText"></param>
         /// <param name="rightText"></param>
+        /// <returns></returns>
+        public static WordDifferences DiffWords(string leftText, string rightText)
+        {
+            return DiffWords(leftText, rightText, false);
+        }
+
+        /// <summary>
+        /// Get word differences between text
+        /// </summary>
+        /// <param name="leftText"></param>
+        /// <param name="rightText"></param>
         /// <param name="ignoreCase"></param>
         /// <returns></returns>
-        public static WordDifferences DiffWords(string leftText, string rightText, bool ignoreCase = false)
+        public static WordDifferences DiffWords(string leftText, string rightText, bool ignoreCase)
         {
             var comparisonType = StringComparison.InvariantCulture;
             if (ignoreCase)
                 comparisonType = StringComparison.InvariantCultureIgnoreCase;
-            var leftWords = leftText.Split(new char[] { ' ', '.', ',', ';', '-' }).ToList();
-            var rightWords = rightText.Split(new char[] { ' ', '.', ',', ';', '-' }).ToList();
+            var leftWords = leftText.Split(new [] { ' ', '.', ',', ';', '-' }).ToList();
+            var rightWords = rightText.Split(new [] { ' ', '.', ',', ';', '-' }).ToList();
             var diff = new WordDifferences();
 
             for (var i = 0; i < leftWords.Count; i++)

@@ -73,15 +73,17 @@ namespace AnyDiff
             LeftValue = leftValue;
             RightValue = rightValue;
             TypeConverter = converter;
+            var leftValueLocal = leftValue;
+
             // if a type converter is specified, convert the type before performing a Diff evaluation
             if (TypeConverter != null)
             {
                 if (TypeConverter.CanConvertFrom(PropertyType))
                 {
-                    if (leftValue != null)
+                    if (leftValueLocal != null)
                     {
-                        leftValue = TypeConverter.ConvertFrom(leftValue);
-                        PropertyType = leftValue.GetType();
+                        leftValueLocal = TypeConverter.ConvertFrom(leftValueLocal);
+                        PropertyType = leftValueLocal.GetType();
                     }
                     if (rightValue != null)
                     {
@@ -90,7 +92,7 @@ namespace AnyDiff
                     }
                 }
             }
-            Delta = CreateDelta(leftValue, rightValue);
+            Delta = CreateDelta(leftValueLocal, rightValue);
         }
 
         /// <summary>
@@ -154,11 +156,11 @@ namespace AnyDiff
         private Type GetNullableType(Type type)
         {
             // Use Nullable.GetUnderlyingType() to remove the Nullable<T> wrapper if type is already nullable.
-            type = Nullable.GetUnderlyingType(type) ?? type;
-            if (type.IsValueType)
-                return typeof(Nullable<>).MakeGenericType(type);
+            var typeLocal = Nullable.GetUnderlyingType(type) ?? type;
+            if (typeLocal.IsValueType)
+                return typeof(Nullable<>).MakeGenericType(typeLocal);
             else
-                return type;
+                return typeLocal;
         }
     }
 }

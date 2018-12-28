@@ -71,9 +71,14 @@ namespace AnyDiff
         /// <summary>
         /// Shortest Middle Snake Return Data
         /// </summary>
-        private struct SMSRD
+        private struct SMSRD : IEquatable<SMSRD>
         {
             internal int _x, _y;
+
+            public bool Equals(SMSRD other)
+            {
+                return _x == other._x && _y == other._y;
+            }
         }
 
         /// <summary>
@@ -82,9 +87,9 @@ namespace AnyDiff
         /// <param name="TextA">A-version of the text (usualy the old one)</param>
         /// <param name="TextB">B-version of the text (usualy the new one)</param>
         /// <returns>Returns a array of Items that describe the differences.</returns>
-        public LineDifferenceResult DiffLines(string TextA, string TextB)
+        public static LineDifferenceResult DiffLines(string TextA, string TextB)
         {
-            return (DiffLines(TextA, TextB, false, false, false));
+            return DiffLines(TextA, TextB, false, false, false);
         }
 
 
@@ -308,8 +313,6 @@ namespace AnyDiff
                         {
                             ret._x = downVector[downOffset + k];
                             ret._y = downVector[downOffset + k] - k;
-                            // ret.u = UpVector[UpOffset + k];     // 2002.09.20: no need for 2 points 
-                            // ret.v = UpVector[UpOffset + k] - k;
                             return (ret);
                         }
                     }

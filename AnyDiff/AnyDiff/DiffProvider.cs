@@ -240,7 +240,6 @@ namespace AnyDiff
                 localPath = $"{rootPath}.{field.Name}";
                 if (IgnoreObjectName(field.Name, localPath, options, ignorePropertiesOrPaths, field.CustomAttributes))
                     continue;
-                var fieldTypeSupport = new ExtendedType(field.Type);
                 object leftValue = null;
                 if (left != null)
                     leftValue = left.GetFieldValue(field);
@@ -461,7 +460,7 @@ namespace AnyDiff
 #endif
         }
 
-        private bool IsMatch(object leftValue, object rightValue)
+        private static bool IsMatch(object leftValue, object rightValue)
         {
             var isMatch = false;
             if (leftValue == null && rightValue == null)

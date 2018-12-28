@@ -11,26 +11,26 @@ namespace AnyDiff
         /// <summary>
         /// Compare properties
         /// </summary>
-        CompareProperties,
+        CompareProperties = 1,
         /// <summary>
         /// Compare fields
         /// </summary>
-        CompareFields,
+        CompareFields = 2,
         /// <summary>
         /// Compare arrays/collections/dictionaries
         /// </summary>
-        CompareCollections,
+        CompareCollections = 4,
+        /// <summary>
+        /// Specify if you want disable the ignore by attribute feature
+        /// </summary>
+        DisableIgnoreAttributes = 8,
+        /// <summary>
+        /// Specify if you want to allow comparing of two differntly typed objects
+        /// </summary>
+        AllowCompareDifferentObjects = 16,
         /// <summary>
         /// Compare all objects
         /// </summary>
         All = CompareProperties | CompareFields | CompareCollections,
-        /// <summary>
-        /// Specify if you want disable the ignore by attribute feature
-        /// </summary>
-        DisableIgnoreAttributes,
-        /// <summary>
-        /// Specify if you want to allow comparing of two differntly typed objects
-        /// </summary>
-        AllowCompareDifferentObjects,
     }
 }
