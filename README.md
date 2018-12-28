@@ -15,7 +15,7 @@ It can even do this for objects that are of different types, though the results 
 
 ## Installation
 Install AnyDiff from the Package Manager Console:
-```
+```powershell
 PM> Install-Package AnyDiff
 ```
 
@@ -110,13 +110,13 @@ foreach(var difference in diff)
 
 ### Scenarios supported
 
-- [x] Circular references
-- [x] Using TypeConverters to understand data types
-- [x] Deltas on strings, DateTimes, TimeSpans, numeric types
-- [x] Comparing arrays, collections, dictionaries
-- [x] Complex objects, deep type inspection
-- [x] Entity Framework objects
-- [x] IEquatable support
+  - [x] Circular references
+  - [x] Using TypeConverters to understand data types
+  - [x] Deltas on strings, DateTimes, TimeSpans, numeric types
+  - [x] Comparing arrays, collections, dictionaries
+  - [x] Complex objects, deep type inspection
+  - [x] Entity Framework objects
+  - [x] IEquatable support
 
 ### Using with other libraries
 Comparing the difference between the same object at different states, using [AnyClone](https://github.com/replaysMike/AnyClone)
