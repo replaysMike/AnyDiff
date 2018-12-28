@@ -54,7 +54,7 @@ namespace AnyDiff.Tests
             var object1 = new MyComplexIgnoreAttributeObject(1, "A string", true);
             var object2 = new MyComplexIgnoreAttributeObject(1, "A different string", true);
 
-            var diff = object1.Diff(object2, ComparisonOptions.DisableIgnoreAttributes);
+            var diff = object1.Diff(object2, ComparisonOptions.All | ComparisonOptions.DisableIgnoreAttributes);
             Assert.AreEqual(1, diff.Count);
         }
     }
