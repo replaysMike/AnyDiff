@@ -117,7 +117,7 @@ namespace AnyDiff
             // The B-Version of the data (modified data) to be compared.
             var DataB = new DiffData(DiffCodes(TextB, h, trimSpace, ignoreSpace, ignoreCase));
 
-            h = null; // free up hashtable memory (maybe)
+            h.Clear();
 
             LCS(DataA, 0, DataA.Length, DataB, 0, DataB.Length);
             return new LineDifferenceResult(CreateDiffs(DataA, DataB), TextA, TextB);
@@ -243,8 +243,6 @@ namespace AnyDiff
                 // Extend the forward path.
                 for (var k = downK - d; k <= downK + d; k += 2)
                 {
-                    // Debug.Write(0, "SMS", "extend forward path " + k.ToString());
-
                     // find the only or better starting point
                     int x, y;
                     if (k == downK - d)
@@ -283,8 +281,6 @@ namespace AnyDiff
                 // Extend the reverse path.
                 for (var k = upK - d; k <= upK + d; k += 2)
                 {
-                    // Debug.Write(0, "SMS", "extend reverse path " + k.ToString());
-
                     // find the only or better starting point
                     int x, y;
                     if (k == upK + d)

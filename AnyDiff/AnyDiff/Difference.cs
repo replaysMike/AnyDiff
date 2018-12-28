@@ -74,6 +74,7 @@ namespace AnyDiff
             RightValue = rightValue;
             TypeConverter = converter;
             var leftValueLocal = leftValue;
+            var rightValueLocal = rightValue;
 
             // if a type converter is specified, convert the type before performing a Diff evaluation
             if (TypeConverter != null)
@@ -85,14 +86,14 @@ namespace AnyDiff
                         leftValueLocal = TypeConverter.ConvertFrom(leftValueLocal);
                         PropertyType = leftValueLocal.GetType();
                     }
-                    if (rightValue != null)
+                    if (rightValueLocal != null)
                     {
-                        rightValue = TypeConverter.ConvertFrom(rightValue);
-                        PropertyType = rightValue.GetType();
+                        rightValueLocal = TypeConverter.ConvertFrom(rightValueLocal);
+                        PropertyType = rightValueLocal.GetType();
                     }
                 }
             }
-            Delta = CreateDelta(leftValueLocal, rightValue);
+            Delta = CreateDelta(leftValueLocal, rightValueLocal);
         }
 
         /// <summary>
@@ -105,7 +106,22 @@ namespace AnyDiff
         /// <param name="leftValue"></param>
         /// <param name="rightValue"></param>
         /// <param name="converter"></param>
-        public Difference(Type propertyType, string property, string path, int arrayIndex, object leftValue, object rightValue, TypeConverter converter = null) : this(propertyType, property, path, leftValue, rightValue, converter)
+        public Difference(Type propertyType, string property, string path, int arrayIndex, object leftValue, object rightValue) : this(propertyType, property, path, leftValue, rightValue, null)
+        {
+            ArrayIndex = arrayIndex;
+        }
+
+        /// <summary>
+        /// Calculate the difference between two objects
+        /// </summary>
+        /// <param name="propertyType"></param>
+        /// <param name="property"></param>
+        /// <param name="path"></param>
+        /// <param name="arrayIndex"></param>
+        /// <param name="leftValue"></param>
+        /// <param name="rightValue"></param>
+        /// <param name="converter"></param>
+        public Difference(Type propertyType, string property, string path, int arrayIndex, object leftValue, object rightValue, TypeConverter converter) : this(propertyType, property, path, leftValue, rightValue, converter)
         {
             ArrayIndex = arrayIndex;
         }
@@ -153,7 +169,7 @@ namespace AnyDiff
             return wordDifferences;
         }
 
-        private Type GetNullableType(Type type)
+        private static Type GetNullableType(Type type)
         {
             // Use Nullable.GetUnderlyingType() to remove the Nullable<T> wrapper if type is already nullable.
             var typeLocal = Nullable.GetUnderlyingType(type) ?? type;
