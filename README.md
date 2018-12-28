@@ -3,6 +3,7 @@
 [![nuget](https://img.shields.io/nuget/dt/AnyDiff.svg)](https://www.nuget.org/packages/AnyDiff/)
 [![Build status](https://ci.appveyor.com/api/projects/status/6vxd3cq83kuo4hg1?svg=true)](https://ci.appveyor.com/project/MichaelBrown/anydiff)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/a79c138869504a359a064a98aa74908a)](https://www.codacy.com/app/replaysMike/AnyDiff?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=replaysMike/AnyDiff&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://api.codacy.com/project/badge/Coverage/a79c138869504a359a064a98aa74908a)](https://www.codacy.com/app/replaysMike/AnyDiff?utm_source=github.com&utm_medium=referral&utm_content=replaysMike/AnyDiff&utm_campaign=Badge_Coverage)
 
 A CSharp library that allows you to diff two objects and get a list of the differences back.
 
