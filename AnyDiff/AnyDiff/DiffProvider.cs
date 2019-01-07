@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -25,10 +24,10 @@ namespace AnyDiff
         /// <summary>
         /// The list of attributes to use when ignoring fields/properties
         /// </summary>
-        private readonly ICollection<Type> _ignoreAttributes = new List<Type> {
+        private readonly ICollection<object> _ignoreAttributes = new List<object> {
             typeof(IgnoreDataMemberAttribute),
             typeof(NonSerializedAttribute),
-            typeof(JsonIgnoreAttribute),
+            "JsonIgnoreAttribute",
         };
 
         /// <summary>
@@ -288,10 +287,13 @@ namespace AnyDiff
             if (leftValue == null && rightValue == null)
                 return differences;
 
+            var propertyTypeSupport = propertyType.GetExtendedType();
             var isCollection = propertyType != typeof(string) && propertyType.GetInterface(nameof(IEnumerable)) != null;
             if (isCollection && options.BitwiseHasFlag(ComparisonOptions.CompareCollections))
             {
                 var genericArguments = propertyType.GetGenericArguments();
+                var isArray = propertyTypeSupport.IsArray;
+                var elementType = propertyTypeSupport.ElementType;
                 // iterate the collection
                 var aValueCollection = (leftValue as IEnumerable);
                 var bValueCollection = (rightValue as IEnumerable);
@@ -307,12 +309,16 @@ namespace AnyDiff
                         if (hasValue)
                         {
                             rightValue = bValueEnumerator?.Current;
+                            if (leftValue == null && rightValue == null)
+                                continue;
+                            if(leftValue == null && rightValue != null)
+                                differences.Add(new Difference(rightValue?.GetType() ?? elementType, propertyName, path, arrayIndex, leftValue, rightValue, typeConverter));
                             // check array element for difference
-                            if (!leftValue.GetType().IsValueType && leftValue.GetType() != typeof(string))
+                            if (leftValue != null && !leftValue.GetType().IsValueType && leftValue.GetType() != typeof(string))
                             {
                                 differences = RecurseProperties(leftValue, rightValue, parent, differences, currentDepth, maxDepth, objectTree, path, options, ignorePropertiesOrPaths);
                             }
-                            else if (leftValue.GetType().IsGenericType && leftValue.GetType().GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
+                            else if (leftValue != null && leftValue.GetType().IsGenericType && leftValue.GetType().GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
                             {
                                 // compare keys and values of a KVP
                                 var leftKvpKey = GetValueForProperty(leftValue, "Key");
@@ -344,14 +350,14 @@ namespace AnyDiff
                             else
                             {
                                 if (!IsMatch(leftValue, rightValue))
-                                    differences.Add(new Difference(leftValue.GetType(), propertyName, path, arrayIndex, leftValue, rightValue, typeConverter));
+                                    differences.Add(new Difference(leftValue?.GetType() ?? elementType, propertyName, path, arrayIndex, leftValue, rightValue, typeConverter));
                             }
                         }
                         else
                         {
                             // left has a value in collection, right does not. That's a difference
                             rightValue = null;
-                            differences.Add(new Difference(leftValue.GetType(), propertyName, path, arrayIndex, leftValue, rightValue, typeConverter));
+                            differences.Add(new Difference(leftValue?.GetType() ?? elementType, propertyName, path, arrayIndex, leftValue, rightValue, typeConverter));
                         }
                         arrayIndex++;
                     }
@@ -363,9 +369,12 @@ namespace AnyDiff
                         {
                             for (var i = 0; i < rightSideExtraElements; i++)
                             {
-                                bValueEnumerator.MoveNext();
-                                differences.Add(new Difference(aValueCollection.GetType(), propertyName, path, arrayIndex, null, bValueEnumerator.Current, typeConverter));
-                                arrayIndex++;
+                                var hasValue = bValueEnumerator?.MoveNext() ?? false;
+                                if (hasValue)
+                                {
+                                    differences.Add(new Difference(aValueCollection.GetType(), propertyName, path, arrayIndex, null, bValueEnumerator.Current, typeConverter));
+                                    arrayIndex++;
+                                }
                             }
                         }
                     }
@@ -437,9 +446,9 @@ namespace AnyDiff
             if (ignoreByNameOrPath)
                 return true;
 #if FEATURE_CUSTOM_ATTRIBUTES
-            if (attributes?.Any(x => _ignoreAttributes.Contains(x.AttributeType)) == true && !options.BitwiseHasFlag(ComparisonOptions.DisableIgnoreAttributes))
+            if (attributes?.Any(x => !options.BitwiseHasFlag(ComparisonOptions.DisableIgnoreAttributes) && (_ignoreAttributes.Contains(x.AttributeType) || _ignoreAttributes.Contains(x.AttributeType.Name))) == true)
 #else
-            if (attributes?.Any(x => _ignoreAttributes.Contains(x.Constructor.DeclaringType)) == true  && !options.BitwiseHasFlag(ComparisonOptions.DisableIgnoreAttributes))
+            if (attributes?.Any(x => !options.BitwiseHasFlag(ComparisonOptions.DisableIgnoreAttributes) && (_ignoreAttributes.Contains(x.Constructor.DeclaringType) || _ignoreAttributes.Contains(x.Constructor.DeclaringType.Name))) == true)
 #endif
                 return true;
             return false;
