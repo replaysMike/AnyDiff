@@ -404,11 +404,17 @@ namespace AnyDiff
             if (enumerableType.IsArray)
                 return ((Array)enumerable).LongLength;
 
-            var enumerator = enumerable.GetEnumerator();
             // count the enumerable
             foreach (var row in enumerable)
                 count++;
-            enumerator.Reset();
+
+            // try to reset the enumerable, if IEnumerable implements it
+            var enumerator = enumerable.GetEnumerator();
+            try
+            {
+                enumerator.Reset();
+            }
+            catch (NotImplementedException) { }
             return count;
         }
 
