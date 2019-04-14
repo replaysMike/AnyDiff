@@ -28,4 +28,8 @@
     <PackageReference Include="TypeSupport" Version="1.0.10" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\TypeSupport\TypeSupport\TypeSupport\TypeSupport.csproj" />
+  </ItemGroup>
+
 </Project>
