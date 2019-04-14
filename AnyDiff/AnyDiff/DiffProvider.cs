@@ -20,11 +20,15 @@ namespace AnyDiff
         /// The default max depth to use
         /// </summary>
         internal const int DefaultMaxDepth = 32;
+		/// <summary>
+		/// The default type support options to use
+		/// </summary>
+		private const TypeSupportOptions _defaultTypeSupportOptions = TypeSupportOptions.Collections | TypeSupportOptions.Attributes | TypeSupportOptions.Caching;
 
-        /// <summary>
-        /// The list of attributes to use when ignoring fields/properties
-        /// </summary>
-        private readonly ICollection<object> _ignoreAttributes = new List<object> {
+		/// <summary>
+		/// The list of attributes to use when ignoring fields/properties
+		/// </summary>
+		private readonly ICollection<object> _ignoreAttributes = new List<object> {
             typeof(IgnoreDataMemberAttribute),
             typeof(NonSerializedAttribute),
             "JsonIgnoreAttribute",
@@ -170,7 +174,7 @@ namespace AnyDiff
             if (maxDepth > 0 && currentDepth >= maxDepth)
                 return differences;
 
-            var typeSupport = new ExtendedType(left != null ? left.GetType() : right.GetType());
+            var typeSupport = new ExtendedType(left != null ? left.GetType() : right.GetType(), _defaultTypeSupportOptions);
             if (typeSupport.Attributes.Any(x => _ignoreAttributes.Contains(x)))
                 return differences;
             if (typeSupport.IsDelegate)
@@ -287,7 +291,7 @@ namespace AnyDiff
             if (leftValue == null && rightValue == null)
                 return differences;
 
-            var propertyTypeSupport = propertyType.GetExtendedType();
+            var propertyTypeSupport = propertyType.GetExtendedType(_defaultTypeSupportOptions);
             var isCollection = propertyType != typeof(string) && propertyType.GetInterface(nameof(IEnumerable)) != null;
             if (isCollection && options.BitwiseHasFlag(ComparisonOptions.CompareCollections))
             {
@@ -398,7 +402,7 @@ namespace AnyDiff
             if (enumerable == null)
                 return 0L;
             var count = 0L;
-            var enumerableType = enumerable.GetType().GetExtendedType();
+			var enumerableType = enumerable.GetType().GetExtendedType(_defaultTypeSupportOptions);
             if (enumerableType.IsCollection)
                 return ((ICollection)enumerable).Count;
             if (enumerableType.IsArray)
