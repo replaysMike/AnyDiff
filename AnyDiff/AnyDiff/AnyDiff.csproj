@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net40;net45;net46;net461;net462;net47</TargetFrameworks>
@@ -25,11 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="TypeSupport" Version="1.0.10" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\TypeSupport\TypeSupport\TypeSupport\TypeSupport.csproj" />
+    <PackageReference Include="TypeSupport" Version="1.0.66" />
   </ItemGroup>
 
 </Project>
