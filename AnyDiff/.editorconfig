@@ -1,0 +1,138 @@
+# top-most EditorConfig file
+root = true
+
+# Unix-style newlines with a newline ending every file
+[*]
+end_of_line              = crlf
+trim_trailing_whitespace = true
+insert_final_newline     = true
+
+# CSharp code style settings:
+
+# 4 space indentation
+[*.cs]
+indent_style                                                             = space
+indent_size                                                              = 4
+
+# Prefer all non-static fields called from within non-static methods to NOT be prefaced with this.
+dotnet_style_qualification_for_field                                     = false : error
+# Prefer all non-static properties called from within non-static methods to NOT be prefaced with this.
+dotnet_style_qualification_for_property                                  = false : error
+# Prefer all non-static methods called from within non-static methods to NOT be prefaced with this.
+dotnet_style_qualification_for_method                                    = false : error
+# 	Prefer all non-static events referenced from within non-static methods to NOT be prefaced with this.
+dotnet_style_qualification_for_event                                     = false : error
+
+# For locals, parameters and type members, prefer types that have a language keyword to represent them (int, double, float, short, long, decimal, string) to use the keyword instead of the type name (Int32, Int64, etc.).
+dotnet_style_predefined_type_for_locals_parameters_members               = true : suggestion
+# Prefer the keyword whenever a member-access expression is used on a type with a keyword representation (int, double, float, short, long, decimal, string).
+dotnet_style_predefined_type_for_member_access                           = true : suggestion
+
+# Prefer objects to be initialized using object initializers when possible.
+dotnet_style_object_initializer                                          = true : suggestion
+
+# Prefer collections to be initialized using collection initializers when possible.
+dotnet_style_collection_initializer                                      = true : suggestion
+
+
+# Prefer tuple names to ItemX properties.
+# C# 7.0+ Feature
+# dotnet_style_explicit_tuple_names = true:suggestion
+
+# Prefer null coalescing expression to ternary operator checking.
+dotnet_style_coalesce_expression                                         = true : error
+
+# Prefer to use null-conditional operator where possible.
+dotnet_style_null_propagation                                            = true : suggestion
+
+dotnet_sort_system_directives_first                                      = true
+
+# Prefer var is used for built-in system types such as int.
+csharp_style_var_for_built_in_types                                      = true : suggestion
+# Prefer var when the type is already mentioned on the right-hand side of a declaration expression.
+csharp_style_var_when_type_is_apparent                                   = true : error
+# Prefer to not use var in all cases unless overridden by another code style rule.
+csharp_style_var_elsewhere                                               = true : suggestion
+
+# Prefer expression-bodied members for methods.
+csharp_style_expression_bodied_methods                                   = true : suggestion
+
+# Prefer expression-bodied members for properties.
+# C# 7.0+ Feature
+# csharp_style_expression_bodied_properties = true:suggestion
+
+# FORMATTING
+csharp_new_line_before_open_brace                                        = methods, properties, control_blocks, types
+csharp_new_line_before_else                                              = true
+csharp_new_line_before_catch                                             = true
+csharp_new_line_before_finally                                           = true
+csharp_new_line_before_members_in_object_initializers                    = true
+csharp_new_line_before_members_in_anonymous_types                        = true
+
+csharp_indent_case_contents                                              = true
+csharp_indent_switch_labels                                              = true
+
+# (int)i
+csharp_space_after_cast                                                  = false
+# for (int i;i<x;i++)
+csharp_space_after_keywords_in_control_flow_statements                   = true
+# Foo(int x)
+csharp_space_between_method_declaration_parameter_list_parentheses       = false
+csharp_space_between_method_call_parameter_list_parentheses              = false
+csharp_space_between_parentheses                                         = false
+
+csharp_preserve_single_line_statements                                   = false
+csharp_preserve_single_line_blocks                                       = true
+
+# NAMING CONVENTION
+
+# Async naming
+dotnet_naming_rule.async_methods_end_in_async.severity                   = error
+dotnet_naming_rule.async_methods_end_in_async.symbols                    = any_async_methods
+dotnet_naming_rule.async_methods_end_in_async.style                      = end_in_async
+
+dotnet_naming_symbols.any_async_methods.applicable_kinds                 = method
+dotnet_naming_symbols.any_async_methods.applicable_accessibilities       = *
+dotnet_naming_symbols.any_async_methods.required_modifiers               = async
+
+dotnet_naming_style.end_in_async.required_suffix                         = Async
+dotnet_naming_style.end_in_async.capitalization                          = pascal_case
+
+# Uppercase methods and properties
+dotnet_naming_rule.any_method_and_property_capitalized.severity          = error
+dotnet_naming_rule.any_method_and_property_capitalized.symbols           = any_method_and_property
+dotnet_naming_rule.any_method_and_property_capitalized.style             = capitalized
+
+dotnet_naming_symbols.any_method_and_property.applicable_kinds           = method, property
+dotnet_naming_symbols.any_method_and_property.applicable_accessibilities = *
+
+dotnet_naming_style.capitalized.capitalization                           = pascal_case
+
+# Constants should be upper_case
+dotnet_naming_rule.constant_fields_capitalized.severity                  = error
+dotnet_naming_rule.constant_fields_capitalized.symbols                   = constant_fields
+dotnet_naming_rule.constant_fields_capitalized.style                     = capitalized
+
+dotnet_naming_symbols.constant_fields.applicable_kinds                   = field
+dotnet_naming_symbols.constant_fields.required_modifiers                 = const
+
+# Underscored private variables
+dotnet_naming_rule.private_fields_underscored.severity                   = error
+dotnet_naming_rule.private_fields_underscored.symbols                    = private_fields
+dotnet_naming_rule.private_fields_underscored.style                      = underscored
+
+dotnet_naming_symbols.private_fields.applicable_kinds                    = field, event, delegate
+dotnet_naming_symbols.private_fields.applicable_accessibilities          = private, internal
+
+dotnet_naming_style.underscored.required_prefix                          = _
+dotnet_naming_style.underscored.capitalization                           = camel_case
+
+# Interfaces must start with an 'I'
+dotnet_naming_rule.interface_types_prefixed_with_i.severity              = error
+dotnet_naming_rule.interface_types_prefixed_with_i.symbols               = interface_types
+dotnet_naming_rule.interface_types_prefixed_with_i.style                 = prefixed_with_i
+
+dotnet_naming_symbols.interface_types.applicable_kinds                   = interface
+
+dotnet_naming_style.prefixed_with_i.required_prefix                      = I
+dotnet_naming_style.prefixed_with_i.capitalization                       = pascal_case
