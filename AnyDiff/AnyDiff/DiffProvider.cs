@@ -107,7 +107,7 @@ namespace AnyDiff
         /// <returns></returns>
         public ICollection<Difference> ComputeDiff(object left, object right, int maxDepth, ComparisonOptions options, params string[] propertyList)
         {
-            return RecurseProperties(left, right, null, new List<Difference>(), 0, maxDepth, new HashSet<int>(), string.Empty, options, propertyList);
+            return RecurseProperties(left, right, null, new List<Difference>(), 0, maxDepth, new HashSet<ObjectHashcode>(), string.Empty, options, propertyList);
         }
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace AnyDiff
                     ignorePropertiesList.Add(name);
                 }
             }
-            return RecurseProperties(left, right, null, new List<Difference>(), 0, maxDepth, new HashSet<int>(), string.Empty, options, ignorePropertiesList);
+            return RecurseProperties(left, right, null, new List<Difference>(), 0, maxDepth, new HashSet<ObjectHashcode>(), string.Empty, options, ignorePropertiesList);
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace AnyDiff
         /// <param name="options">Specify the comparison options</param>
         /// <param name="propertyList">A list of property names or full path names to ignore</param>
         /// <returns></returns>
-        private ICollection<Difference> RecurseProperties(object left, object right, object parent, ICollection<Difference> differences, int currentDepth, int maxDepth, HashSet<int> objectTree, string path, ComparisonOptions options, ICollection<string> propertyList)
+        private ICollection<Difference> RecurseProperties(object left, object right, object parent, ICollection<Difference> differences, int currentDepth, int maxDepth, HashSet<ObjectHashcode> objectTree, string path, ComparisonOptions options, ICollection<string> propertyList)
         {
             if (GetPropertyInclusionState(null, path, options, propertyList, null) == FilterResult.Exclude)
                 return differences;
@@ -188,9 +188,10 @@ namespace AnyDiff
             if (left != null)
             {
                 var hashCode = System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(left);
-                if (objectTree.Contains(hashCode))
+                var key = new ObjectHashcode(hashCode, typeSupport.Type);
+                if (objectTree.Contains(key))
                     return differences;
-                objectTree.Add(hashCode);
+                objectTree.Add(key);
             }
 
             // get list of properties
@@ -268,7 +269,7 @@ namespace AnyDiff
         /// <param name="options">Specify the comparison options</param>
         /// <param name="propertyList">A list of property names or full path names to ignore</param>
         /// <returns></returns>
-        private ICollection<Difference> GetDifferences(string propertyName, Type propertyType, TypeConverter typeConverter, object left, object right, object parent, ICollection<Difference> differences, int currentDepth, int maxDepth, HashSet<int> objectTree, string path, ComparisonOptions options, ICollection<string> propertyList)
+        private ICollection<Difference> GetDifferences(string propertyName, Type propertyType, TypeConverter typeConverter, object left, object right, object parent, ICollection<Difference> differences, int currentDepth, int maxDepth, HashSet<ObjectHashcode> objectTree, string path, ComparisonOptions options, ICollection<string> propertyList)
         {
             if (GetPropertyInclusionState(propertyName, path, options, propertyList, null) == FilterResult.Exclude)
                 return differences;
@@ -303,11 +304,11 @@ namespace AnyDiff
                 var bValueCollection = (rightValue as IEnumerable);
                 var bValueCollectionCount = GetCountFromEnumerable(bValueCollection);
                 var bValueEnumerator = bValueCollection?.GetEnumerator();
-                var arrayIndex = 0;
                 if (aValueCollection != null)
                 {
                     if (!options.BitwiseHasFlag(ComparisonOptions.AllowCollectionsToBeOutOfOrder))
                     {
+                        var arrayIndex = 0;
                         // compare elements must be the same order
                         foreach (var collectionItem in aValueCollection)
                         {
@@ -391,6 +392,7 @@ namespace AnyDiff
                         // compare elements can be of different order (use the hashcode for this)
                         var leftHashCodeEntryList = new Dictionary<int, CollectionKey>(); // hashcode, value/count
                         var rightHashCodeEntryList = new Dictionary<int, CollectionKey>(); // hashcode, value/count
+                        var arrayIndex = 0;
                         foreach (var collectionItem in aValueCollection)
                         {
                             var hashCode = collectionItem.GetHashCode();
@@ -398,10 +400,13 @@ namespace AnyDiff
                             {
                                 var val = leftHashCodeEntryList[hashCode];
                                 val.Matches++;
+                                val.OriginalIndex = arrayIndex; // populate the highest value
                             }
                             else
-                                leftHashCodeEntryList.Add(hashCode, new CollectionKey(collectionItem, 1));
+                                leftHashCodeEntryList.Add(hashCode, new CollectionKey(arrayIndex, collectionItem, 1));
+                            arrayIndex++;
                         }
+                        arrayIndex = 0;
                         foreach (var collectionItem in bValueCollection)
                         {
                             var hashCode = collectionItem.GetHashCode();
@@ -409,32 +414,43 @@ namespace AnyDiff
                             {
                                 var val = rightHashCodeEntryList[hashCode];
                                 val.Matches++;
+                                val.OriginalIndex = arrayIndex; // populate the highest value
                             }
                             else
-                                rightHashCodeEntryList.Add(hashCode, new CollectionKey(collectionItem, 1));
+                                rightHashCodeEntryList.Add(hashCode, new CollectionKey(arrayIndex, collectionItem, 1));
+                            arrayIndex++;
                         }
                         var orderedLeft = leftHashCodeEntryList.OrderBy(x => x.Key);
                         var orderedRight = rightHashCodeEntryList.OrderBy(x => x.Key);
                         // compare the left collection
                         foreach(var item in orderedLeft)
                         {
-                            var matchFound = orderedRight.Any(x => x.Key == item.Key);
-                            if (!matchFound)
+                            var matchFound = orderedRight.Where(x => x.Key == item.Key).Select(x => x.Value).FirstOrDefault();
+                            if (matchFound == null)
                             {
-                                differences.Add(new Difference((leftValue ?? rightValue).GetType(), propertyName, path, arrayIndex, item.Value.Value, null, typeConverter));
+                                differences.Add(new Difference((leftValue ?? rightValue).GetType(), propertyName, path, item.Value.OriginalIndex, item.Value.Value, null, typeConverter));
                             }
-                            arrayIndex++;
+                            else
+                            {
+                                // also compare that the number of instances of the value in a collection are the same
+                                if (matchFound.Matches != item.Value.Matches && item.Value.Matches > matchFound.Matches)
+                                    differences.Add(new Difference((leftValue ?? rightValue).GetType(), propertyName, path, item.Value.OriginalIndex, item.Value.Value, null, typeConverter));
+                            }
                         }
-                        arrayIndex = 0;
                         // compare the right collection
                         foreach (var item in orderedRight)
                         {
-                            var matchFound = orderedLeft.Any(x => x.Key == item.Key);
-                            if (!matchFound)
+                            var matchFound = orderedLeft.Where(x => x.Key == item.Key).Select(x => x.Value).FirstOrDefault();
+                            if (matchFound == null)
                             {
-                                differences.Add(new Difference((leftValue ?? rightValue).GetType(), propertyName, path, arrayIndex, null, item.Value.Value, typeConverter));
+                                differences.Add(new Difference((leftValue ?? rightValue).GetType(), propertyName, path, item.Value.OriginalIndex, null, item.Value.Value, typeConverter));
                             }
-                            arrayIndex++;
+                            else
+                            {
+                                // also compare that the number of instances of the value in a collection are the same
+                                if (matchFound.Matches != item.Value.Matches && item.Value.Matches > matchFound.Matches)
+                                    differences.Add(new Difference((leftValue ?? rightValue).GetType(), propertyName, path, item.Value.OriginalIndex, null, item.Value.Value, typeConverter));
+                            }
                         }
                     }
 
@@ -571,8 +587,10 @@ namespace AnyDiff
         {
             public object Value { get; set; }
             public int Matches { get; set; }
-            public CollectionKey(object value, int matches)
+            public int OriginalIndex { get; set; }
+            public CollectionKey(int originalIndex, object value, int matches)
             {
+                OriginalIndex = originalIndex;
                 Value = value;
                 Matches = matches;
             }

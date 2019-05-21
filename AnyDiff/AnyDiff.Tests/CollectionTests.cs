@@ -216,5 +216,38 @@ namespace AnyDiff.Tests
             var diff = provider.ComputeDiff<TestObject>(obj1, obj2, ComparisonOptions.All | ComparisonOptions.AllowCollectionsToBeOutOfOrder);
             Assert.AreEqual(2, diff.Count);
         }
+
+        [Test]
+        public void ShouldDetect_Array_OutOfOrder_LeftAdditionalElements()
+        {
+            var provider = new DiffProvider();
+
+            var obj1 = new TestObject { IntArray = new int[] { 1, 2, 3, 4, 5, 9 } };
+            var obj2 = new TestObject { IntArray = new int[] { 2, 5, 4, 3, 1 } };
+            var diff = provider.ComputeDiff<TestObject>(obj1, obj2, ComparisonOptions.All | ComparisonOptions.AllowCollectionsToBeOutOfOrder);
+            Assert.AreEqual(1, diff.Count);
+        }
+
+        [Test]
+        public void ShouldDetect_Array_OutOfOrder_RightAdditionalElements()
+        {
+            var provider = new DiffProvider();
+
+            var obj1 = new TestObject { IntArray = new int[] { 1, 2, 3, 4, 5 } };
+            var obj2 = new TestObject { IntArray = new int[] { 2, 5, 4, 3, 1, 8 } };
+            var diff = provider.ComputeDiff<TestObject>(obj1, obj2, ComparisonOptions.All | ComparisonOptions.AllowCollectionsToBeOutOfOrder);
+            Assert.AreEqual(1, diff.Count);
+        }
+
+        [Test]
+        public void ShouldDetect_Array_OutOfOrder_DifferentCount()
+        {
+            var provider = new DiffProvider();
+
+            var obj1 = new TestObject { IntArray = new int[] { 1, 2, 3, 4, 5 } };
+            var obj2 = new TestObject { IntArray = new int[] { 2, 5, 4, 3, 1, 3 } };
+            var diff = provider.ComputeDiff<TestObject>(obj1, obj2, ComparisonOptions.All | ComparisonOptions.AllowCollectionsToBeOutOfOrder);
+            Assert.AreEqual(1, diff.Count);
+        }
     }
 }
