@@ -114,6 +114,7 @@ foreach(var difference in diff)
   - [x] Using TypeConverters to understand data types
   - [x] Deltas on strings, DateTimes, TimeSpans, numeric types
   - [x] Comparing arrays, collections, dictionaries
+  - [x] Comparing collections with different ordering
   - [x] Complex objects, deep type inspection
   - [x] Entity Framework objects
   - [x] IEquatable support
