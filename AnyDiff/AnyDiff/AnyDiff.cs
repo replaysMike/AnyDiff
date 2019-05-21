@@ -56,12 +56,12 @@ namespace AnyDiff
         /// <param name="left">Object A</param>
         /// <param name="right">Object B</param>
         /// <param name="options">Specify the comparison options</param>
-        /// <param name="ignorePropertiesOrPaths">A list of property names or full path names to ignore</param>
+        /// <param name="propertyList">A list of property names or full path names to include/exclude</param>
         /// <returns></returns>
-        public static ICollection<Difference> Diff<T>(T left, T right, ComparisonOptions options, string[] ignorePropertiesOrPaths)
+        public static ICollection<Difference> Diff<T>(T left, T right, ComparisonOptions options, string[] propertyList)
         {
             var diffProvider = new DiffProvider();
-            return diffProvider.ComputeDiff(left, right, DiffProvider.DefaultMaxDepth, options, ignorePropertiesOrPaths);
+            return diffProvider.ComputeDiff(left, right, DiffProvider.DefaultMaxDepth, options, propertyList);
         }
 
         /// <summary>
@@ -71,12 +71,12 @@ namespace AnyDiff
         /// <param name="left">Object A</param>
         /// <param name="right">Object B</param>
         /// <param name="options">Specify the comparison options</param>
-        /// <param name="ignoreProperties">A list of properties to ignore</param>
+        /// <param name="propertyList">A list of property names or full path names to include/exclude</param>
         /// <returns></returns>
-        public static ICollection<Difference> Diff<T>(T left, T right, ComparisonOptions options, params Expression<Func<T, object>>[] ignoreProperties)
+        public static ICollection<Difference> Diff<T>(T left, T right, ComparisonOptions options, params Expression<Func<T, object>>[] propertyList)
         {
             var diffProvider = new DiffProvider();
-            return diffProvider.ComputeDiff(left, right, DiffProvider.DefaultMaxDepth, options, ignoreProperties);
+            return diffProvider.ComputeDiff(left, right, DiffProvider.DefaultMaxDepth, options, propertyList);
         }
 
         /// <summary>
@@ -86,12 +86,12 @@ namespace AnyDiff
         /// <param name="right">Object B</param>
         /// <param name="maxDepth">Maximum recursion depth</param>
         /// <param name="options">Specify the comparison options</param>
-        /// <param name="ignorePropertiesOrPaths">A list of property names or full path names to ignore</param>
+        /// <param name="propertyList">A list of property names or full path names to include/exclude</param>
         /// <returns></returns>
-        public static ICollection<Difference> Diff(object left, object right, int maxDepth, ComparisonOptions options, params string[] ignorePropertiesOrPaths)
+        public static ICollection<Difference> Diff(object left, object right, int maxDepth, ComparisonOptions options, params string[] propertyList)
         {
             var diffProvider = new DiffProvider();
-            return diffProvider.ComputeDiff(left, right, maxDepth, options, ignorePropertiesOrPaths);
+            return diffProvider.ComputeDiff(left, right, maxDepth, options, propertyList);
         }
 
         /// <summary>
@@ -102,11 +102,12 @@ namespace AnyDiff
         /// <param name="right">Object B</param>
         /// <param name="maxDepth">Maximum recursion depth</param>
         /// <param name="options">Specify the comparison options</param>
+        /// <param name="propertyList">A list of property names or full path names to include/exclude</param>
         /// <returns></returns>
-        public static ICollection<Difference> Diff<T>(T left, T right, int maxDepth, ComparisonOptions options, params Expression<Func<T, object>>[] ignoreProperties)
+        public static ICollection<Difference> Diff<T>(T left, T right, int maxDepth, ComparisonOptions options, params Expression<Func<T, object>>[] propertyList)
         {
             var diffProvider = new DiffProvider();
-            return diffProvider.ComputeDiff(left, right, maxDepth, options, ignoreProperties);
+            return diffProvider.ComputeDiff(left, right, maxDepth, options, propertyList);
         }
     }
 }

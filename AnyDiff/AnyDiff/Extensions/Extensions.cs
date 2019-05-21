@@ -35,11 +35,11 @@ namespace AnyDiff.Extensions
         /// <param name="left">Object A</param>
         /// <param name="right">Object B</param>
         /// <param name="options">Specify the comparison options</param>
-        /// <param name="ignorePropertiesOrPaths">A list of property names or full path names to ignore</param>
+        /// <param name="propertyList">A list of property names or full path names to include/exclude</param>
         /// <returns></returns>
-        public static ICollection<Difference> Diff(this object left, object right, ComparisonOptions options, params string[] ignorePropertiesOrPaths)
+        public static ICollection<Difference> Diff(this object left, object right, ComparisonOptions options, params string[] propertyList)
         {
-            return Diff(left, right, DiffProvider.DefaultMaxDepth, options, ignorePropertiesOrPaths);
+            return Diff(left, right, DiffProvider.DefaultMaxDepth, options, propertyList);
         }
 
         /// <summary>
@@ -47,11 +47,11 @@ namespace AnyDiff.Extensions
         /// </summary>
         /// <param name="left">Object A</param>
         /// <param name="right">Object B</param>
-        /// <param name="ignorePropertiesOrPaths">A list of property names or full path names to ignore</param>
+        /// <param name="propertyList">A list of property names or full path names to include/exclude</param>
         /// <returns></returns>
-        public static ICollection<Difference> Diff(this object left, object right, params string[] ignorePropertiesOrPaths)
+        public static ICollection<Difference> Diff(this object left, object right, params string[] propertyList)
         {
-            return Diff(left, right, DiffProvider.DefaultMaxDepth, ComparisonOptions.All, ignorePropertiesOrPaths);
+            return Diff(left, right, DiffProvider.DefaultMaxDepth, ComparisonOptions.All, propertyList);
         }
 
         /// <summary>
@@ -60,11 +60,11 @@ namespace AnyDiff.Extensions
         /// <typeparam name="T"></typeparam>
         /// <param name="left">Object A</param>
         /// <param name="right">Object B</param>
-        /// <param name="ignoreProperties">A list of properties to ignore</param>
+        /// <param name="propertyList">A list of property names or full path names to include/exclude</param>
         /// <returns></returns>
-        public static ICollection<Difference> Diff<T>(this T left, T right, params Expression<Func<T, object>>[] ignoreProperties)
+        public static ICollection<Difference> Diff<T>(this T left, T right, params Expression<Func<T, object>>[] propertyList)
         {
-            return Diff(left, right, DiffProvider.DefaultMaxDepth, ComparisonOptions.All, ignoreProperties);
+            return Diff(left, right, DiffProvider.DefaultMaxDepth, ComparisonOptions.All, propertyList);
         }
 
         /// <summary>
@@ -74,11 +74,11 @@ namespace AnyDiff.Extensions
         /// <param name="left">Object A</param>
         /// <param name="right">Object B</param>
         /// <param name="options">Specify the comparison options</param>
-        /// <param name="ignoreProperties">A list of properties to ignore</param>
+        /// <param name="propertyList">A list of property names or full path names to include/exclude</param>
         /// <returns></returns>
-        public static ICollection<Difference> Diff<T>(this T left, T right, ComparisonOptions options, params Expression<Func<T, object>>[] ignoreProperties)
+        public static ICollection<Difference> Diff<T>(this T left, T right, ComparisonOptions options, params Expression<Func<T, object>>[] propertyList)
         {
-            return Diff(left, right, DiffProvider.DefaultMaxDepth, options, ignoreProperties);
+            return Diff(left, right, DiffProvider.DefaultMaxDepth, options, propertyList);
         }
 
         /// <summary>
@@ -88,12 +88,12 @@ namespace AnyDiff.Extensions
         /// <param name="right">Object B</param>
         /// <param name="maxDepth">Maximum recursion depth</param>
         /// <param name="options">Specify the comparison options</param>
-        /// <param name="ignorePropertiesOrPaths">A list of property names or full path names to ignore</param>
+        /// <param name="propertyList">A list of property names or full path names to include/exclude</param>
         /// <returns></returns>
-        public static ICollection<Difference> Diff(this object left, object right, int maxDepth, ComparisonOptions options, params string[] ignorePropertiesorPaths)
+        public static ICollection<Difference> Diff(this object left, object right, int maxDepth, ComparisonOptions options, params string[] propertyList)
         {
             var diffProvider = new DiffProvider();
-            return diffProvider.ComputeDiff(left, right, maxDepth, options, ignorePropertiesorPaths);
+            return diffProvider.ComputeDiff(left, right, maxDepth, options, propertyList);
         }
 
         /// <summary>
@@ -104,11 +104,12 @@ namespace AnyDiff.Extensions
         /// <param name="right">Object B</param>
         /// <param name="maxDepth">Maximum recursion depth</param>
         /// <param name="options">Specify the comparison options</param>
+        /// <param name="propertyList">A list of property names or full path names to include/exclude</param>
         /// <returns></returns>
-        public static ICollection<Difference> Diff<T>(this T left, T right, int maxDepth, ComparisonOptions options, params Expression<Func<T, object>>[] ignoreProperties)
+        public static ICollection<Difference> Diff<T>(this T left, T right, int maxDepth, ComparisonOptions options, params Expression<Func<T, object>>[] propertyList)
         {
             var diffProvider = new DiffProvider();
-            return diffProvider.ComputeDiff(left, right, maxDepth, options, ignoreProperties);
+            return diffProvider.ComputeDiff(left, right, maxDepth, options, propertyList);
         }
     }
 }

@@ -9,32 +9,62 @@ namespace AnyDiff.Tests
     public class IgnoreTests
     {
         [Test]
-        public void ShouldIgnore_ByPropertyList()
+        public void ShouldExclude_ByPropertyList()
         {
             var object1 = new MyComplexObject(1, "A string", true);
             var object2 = new MyComplexObject(1, "A different string", true);
 
-            var diff = object1.Diff(object2, ignoreProperties: x => x.Name);
+            var diff = object1.Diff(object2, propertyList: x => x.Name);
             Assert.AreEqual(0, diff.Count);
         }
 
         [Test]
-        public void ShouldIgnore_ByPropertyNameList()
+        public void ShouldExclude_ByPropertyNameList()
         {
             var object1 = new MyComplexObject(1, "A string", true);
             var object2 = new MyComplexObject(1, "A different string", true);
 
-            var diff = object1.Diff(object2, ignorePropertiesOrPaths: "Name");
+            var diff = object1.Diff(object2, propertyList: "Name");
             Assert.AreEqual(0, diff.Count);
         }
 
         [Test]
-        public void ShouldIgnore_ByPropertyPathList()
+        public void ShouldExclude_ByPropertyPathList()
         {
             var object1 = new MyComplexObject(1, "A string", new Location(49.282730, -123.120735));
             var object2 = new MyComplexObject(1, "A different string", new Location(40.712776, -123.120735));
 
             var diff = object1.Diff(object2, ".Name", ".Location.Latitude");
+            Assert.AreEqual(0, diff.Count);
+        }
+
+        [Test]
+        public void ShouldInclude_ByPropertyList()
+        {
+            var object1 = new MyComplexObject(1, "A string", new Location(49.282730, -123.120735));
+            var object2 = new MyComplexObject(1, "A different string", new Location(40.712776, -123.120735));
+
+            var diff = object1.Diff(object2, ComparisonOptions.IncludeList | ComparisonOptions.All, x => x.Id);
+            Assert.AreEqual(0, diff.Count);
+        }
+
+        [Test]
+        public void ShouldInclude_ByPropertyPathList()
+        {
+            var object1 = new MyComplexObject(1, "A string", new Location(49.282730, -123.120735));
+            var object2 = new MyComplexObject(1, "A different string", new Location(40.712776, -123.120735));
+
+            var diff = object1.Diff(object2, ComparisonOptions.IncludeList | ComparisonOptions.All, ".Id");
+            Assert.AreEqual(0, diff.Count);
+        }
+
+        [Test]
+        public void ShouldInclude_ByPropertyNameList()
+        {
+            var object1 = new MyComplexObject(1, "A string", new Location(49.282730, -123.120735));
+            var object2 = new MyComplexObject(1, "A different string", new Location(40.712776, -123.120735));
+
+            var diff = object1.Diff(object2, ComparisonOptions.IncludeList | ComparisonOptions.All, "Id");
             Assert.AreEqual(0, diff.Count);
         }
 

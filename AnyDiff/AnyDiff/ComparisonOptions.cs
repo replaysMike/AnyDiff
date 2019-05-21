@@ -29,6 +29,18 @@ namespace AnyDiff
         /// </summary>
         AllowCompareDifferentObjects = 16,
         /// <summary>
+        /// Specify if you want to allow comparing of lists/arrays that don't have the same order
+        /// </summary>
+        AllowCollectionsToBeOutOfOrder = 32,
+        /// <summary>
+        /// Specify the property list passed is an include list
+        /// </summary>
+        IncludeList = 64,
+        /// <summary>
+        /// Specify the property list passed is an exclude list (default)
+        /// </summary>
+        ExcludeList = 128,
+        /// <summary>
         /// Compare all objects
         /// </summary>
         All = CompareProperties | CompareFields | CompareCollections,

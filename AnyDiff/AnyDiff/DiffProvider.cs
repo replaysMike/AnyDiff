@@ -20,15 +20,15 @@ namespace AnyDiff
         /// The default max depth to use
         /// </summary>
         internal const int DefaultMaxDepth = 32;
-		/// <summary>
-		/// The default type support options to use
-		/// </summary>
-		private const TypeSupportOptions _defaultTypeSupportOptions = TypeSupportOptions.Collections | TypeSupportOptions.Attributes | TypeSupportOptions.Caching;
+        /// <summary>
+        /// The default type support options to use
+        /// </summary>
+        private const TypeSupportOptions DefaultTypeSupportOptions = TypeSupportOptions.Collections | TypeSupportOptions.Attributes | TypeSupportOptions.Caching;
 
-		/// <summary>
-		/// The list of attributes to use when ignoring fields/properties
-		/// </summary>
-		private readonly ICollection<object> _ignoreAttributes = new List<object> {
+        /// <summary>
+        /// The list of attributes to use when ignoring fields/properties
+        /// </summary>
+        private readonly ICollection<object> _ignoreAttributes = new List<object> {
             typeof(IgnoreDataMemberAttribute),
             typeof(NonSerializedAttribute),
             "JsonIgnoreAttribute",
@@ -63,11 +63,11 @@ namespace AnyDiff
         /// <param name="left">Object A</param>
         /// <param name="right">Object B</param>
         /// <param name="options">Specify the comparison options</param>
-        /// <param name="ignorePropertiesOrPaths">A list of property names or full path names to ignore</param>
+        /// <param name="propertyList">A list of property names or full path names to ignore</param>
         /// <returns></returns>
-        public ICollection<Difference> ComputeDiff(object left, object right, ComparisonOptions options, params string[] ignorePropertiesOrPaths)
+        public ICollection<Difference> ComputeDiff(object left, object right, ComparisonOptions options, params string[] propertyList)
         {
-            return ComputeDiff(left, right, DefaultMaxDepth, options, ignorePropertiesOrPaths);
+            return ComputeDiff(left, right, DefaultMaxDepth, options, propertyList);
         }
 
         /// <summary>
@@ -89,11 +89,11 @@ namespace AnyDiff
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <param name="options">Specify the comparison options</param>
-        /// <param name="ignoreProperties"></param>
+        /// <param name="propertyList"></param>
         /// <returns></returns>
-        public ICollection<Difference> ComputeDiff<T>(T left, T right, ComparisonOptions options, params Expression<Func<T, object>>[] ignoreProperties)
+        public ICollection<Difference> ComputeDiff<T>(T left, T right, ComparisonOptions options, params Expression<Func<T, object>>[] propertyList)
         {
-            return ComputeDiff(left, right, DefaultMaxDepth, options, ignoreProperties);
+            return ComputeDiff(left, right, DefaultMaxDepth, options, propertyList);
         }
 
         /// <summary>
@@ -103,11 +103,11 @@ namespace AnyDiff
         /// <param name="right"></param>
         /// <param name="maxDepth"></param>
         /// <param name="options">Specify the comparison options</param>
-        /// <param name="ignorePropertiesOrPaths">A list of property names or full path names to ignore</param>
+        /// <param name="propertyList">A list of property names or full path names to ignore</param>
         /// <returns></returns>
-        public ICollection<Difference> ComputeDiff(object left, object right, int maxDepth, ComparisonOptions options, params string[] ignorePropertiesOrPaths)
+        public ICollection<Difference> ComputeDiff(object left, object right, int maxDepth, ComparisonOptions options, params string[] propertyList)
         {
-            return RecurseProperties(left, right, null, new List<Difference>(), 0, maxDepth, new HashSet<int>(), string.Empty, options, ignorePropertiesOrPaths);
+            return RecurseProperties(left, right, null, new List<Difference>(), 0, maxDepth, new HashSet<int>(), string.Empty, options, propertyList);
         }
 
         /// <summary>
@@ -119,12 +119,12 @@ namespace AnyDiff
         /// <param name="maxDepth">Maximum recursion depth</param>
         /// <param name="options">Specify the comparison options</param>
         /// <returns></returns>
-        public ICollection<Difference> ComputeDiff<T>(T left, T right, int maxDepth, ComparisonOptions options, params Expression<Func<T, object>>[] ignoreProperties)
+        public ICollection<Difference> ComputeDiff<T>(T left, T right, int maxDepth, ComparisonOptions options, params Expression<Func<T, object>>[] propertyList)
         {
             var ignorePropertiesList = new List<string>();
-            if (ignoreProperties != null)
+            if (propertyList != null)
             {
-                foreach (var expression in ignoreProperties)
+                foreach (var expression in propertyList)
                 {
                     var name = "";
                     switch (expression.Body)
@@ -156,11 +156,11 @@ namespace AnyDiff
         /// <param name="objectTree">A hash table containing the tree that has already been traversed, to prevent recursion loops</param>
         /// <param name="allowCompareDifferentObjects">True to allow comparing of objects with different types</param>
         /// <param name="options">Specify the comparison options</param>
-        /// <param name="ignorePropertiesOrPaths">A list of property names or full path names to ignore</param>
+        /// <param name="propertyList">A list of property names or full path names to ignore</param>
         /// <returns></returns>
-        private ICollection<Difference> RecurseProperties(object left, object right, object parent, ICollection<Difference> differences, int currentDepth, int maxDepth, HashSet<int> objectTree, string path, ComparisonOptions options, ICollection<string> ignorePropertiesOrPaths)
+        private ICollection<Difference> RecurseProperties(object left, object right, object parent, ICollection<Difference> differences, int currentDepth, int maxDepth, HashSet<int> objectTree, string path, ComparisonOptions options, ICollection<string> propertyList)
         {
-            if (IgnoreObjectName(null, path, options, ignorePropertiesOrPaths, null))
+            if (GetPropertyInclusionState(null, path, options, propertyList, null) == FilterResult.Exclude)
                 return differences;
 
             if (!options.BitwiseHasFlag(ComparisonOptions.AllowCompareDifferentObjects)
@@ -174,7 +174,7 @@ namespace AnyDiff
             if (maxDepth > 0 && currentDepth >= maxDepth)
                 return differences;
 
-            var typeSupport = new ExtendedType(left != null ? left.GetType() : right.GetType(), _defaultTypeSupportOptions);
+            var typeSupport = new ExtendedType(left != null ? left.GetType() : right.GetType(), DefaultTypeSupportOptions);
             if (typeSupport.Attributes.Any(x => _ignoreAttributes.Contains(x)))
                 return differences;
             if (typeSupport.IsDelegate)
@@ -211,7 +211,7 @@ namespace AnyDiff
             foreach (var property in properties)
             {
                 localPath = $"{rootPath}.{property.Name}";
-                if (IgnoreObjectName(property.Name, localPath, options, ignorePropertiesOrPaths, property.CustomAttributes))
+                if (GetPropertyInclusionState(property.Name, localPath, options, propertyList, property.CustomAttributes) == FilterResult.Exclude)
                     continue;
                 object leftValue = null;
                 try
@@ -233,12 +233,12 @@ namespace AnyDiff
                 {
                     // catch any exceptions accessing the property
                 }
-                differences = GetDifferences(property.Name, property.Type, GetTypeConverter(property), leftValue, rightValue, parent, differences, currentDepth, maxDepth, objectTree, localPath, options, ignorePropertiesOrPaths);
+                differences = GetDifferences(property.Name, property.Type, GetTypeConverter(property), leftValue, rightValue, parent, differences, currentDepth, maxDepth, objectTree, localPath, options, propertyList);
             }
             foreach (var field in fields)
             {
                 localPath = $"{rootPath}.{field.Name}";
-                if (IgnoreObjectName(field.Name, localPath, options, ignorePropertiesOrPaths, field.CustomAttributes))
+                if (GetPropertyInclusionState(field.Name, localPath, options, propertyList, field.CustomAttributes) == FilterResult.Exclude)
                     continue;
                 object leftValue = null;
                 if (left != null)
@@ -246,7 +246,7 @@ namespace AnyDiff
                 object rightValue = null;
                 if (right != null)
                     rightValue = right.GetFieldValue(field);
-                differences = GetDifferences(field.Name, field.Type, GetTypeConverter(field), leftValue, rightValue, parent, differences, currentDepth, maxDepth, objectTree, localPath, options, ignorePropertiesOrPaths);
+                differences = GetDifferences(field.Name, field.Type, GetTypeConverter(field), leftValue, rightValue, parent, differences, currentDepth, maxDepth, objectTree, localPath, options, propertyList);
             }
 
             return differences;
@@ -266,11 +266,11 @@ namespace AnyDiff
         /// <param name="maxDepth">The maximum number of tree children to recurse</param>
         /// <param name="objectTree">A hash table containing the tree that has already been traversed, to prevent recursion loops</param>
         /// <param name="options">Specify the comparison options</param>
-        /// <param name="ignorePropertiesOrPaths">A list of property names or full path names to ignore</param>
+        /// <param name="propertyList">A list of property names or full path names to ignore</param>
         /// <returns></returns>
-        private ICollection<Difference> GetDifferences(string propertyName, Type propertyType, TypeConverter typeConverter, object left, object right, object parent, ICollection<Difference> differences, int currentDepth, int maxDepth, HashSet<int> objectTree, string path, ComparisonOptions options, ICollection<string> ignorePropertiesOrPaths)
+        private ICollection<Difference> GetDifferences(string propertyName, Type propertyType, TypeConverter typeConverter, object left, object right, object parent, ICollection<Difference> differences, int currentDepth, int maxDepth, HashSet<int> objectTree, string path, ComparisonOptions options, ICollection<string> propertyList)
         {
-            if (IgnoreObjectName(propertyName, path, options, ignorePropertiesOrPaths, null))
+            if (GetPropertyInclusionState(propertyName, path, options, propertyList, null) == FilterResult.Exclude)
                 return differences;
 
             object leftValue = null;
@@ -291,7 +291,7 @@ namespace AnyDiff
             if (leftValue == null && rightValue == null)
                 return differences;
 
-            var propertyTypeSupport = propertyType.GetExtendedType(_defaultTypeSupportOptions);
+            var propertyTypeSupport = propertyType.GetExtendedType(DefaultTypeSupportOptions);
             var isCollection = propertyType != typeof(string) && propertyType.GetInterface(nameof(IEnumerable)) != null;
             if (isCollection && options.BitwiseHasFlag(ComparisonOptions.CompareCollections))
             {
@@ -306,87 +306,143 @@ namespace AnyDiff
                 var arrayIndex = 0;
                 if (aValueCollection != null)
                 {
-                    foreach (var collectionItem in aValueCollection)
+                    if (!options.BitwiseHasFlag(ComparisonOptions.AllowCollectionsToBeOutOfOrder))
                     {
-                        var hasValue = bValueEnumerator?.MoveNext() ?? false;
-                        leftValue = collectionItem;
-                        if (hasValue)
+                        // compare elements must be the same order
+                        foreach (var collectionItem in aValueCollection)
                         {
-                            rightValue = bValueEnumerator?.Current;
-                            if (leftValue == null && rightValue == null)
-                                continue;
-                            if(leftValue == null && rightValue != null)
-                                differences.Add(new Difference(rightValue?.GetType() ?? elementType, propertyName, path, arrayIndex, leftValue, rightValue, typeConverter));
-                            // check array element for difference
-                            if (leftValue != null && !leftValue.GetType().IsValueType && leftValue.GetType() != typeof(string))
+                            var hasValue = bValueEnumerator?.MoveNext() ?? false;
+                            leftValue = collectionItem;
+                            if (hasValue)
                             {
-                                differences = RecurseProperties(leftValue, rightValue, parent, differences, currentDepth, maxDepth, objectTree, path, options, ignorePropertiesOrPaths);
-                            }
-                            else if (leftValue != null && leftValue.GetType().IsGenericType && leftValue.GetType().GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
-                            {
-                                // compare keys and values of a KVP
-                                var leftKvpKey = GetValueForProperty(leftValue, "Key");
-                                var leftKvpValue = GetValueForProperty(leftValue, "Value");
-                                var rightKvpKey = GetValueForProperty(rightValue, "Key");
-                                var rightKvpValue = GetValueForProperty(rightValue, "Value");
-
-                                Type leftKeyType = leftKvpKey?.GetType() ?? genericArguments.First();
-                                Type leftValueType = leftKvpValue?.GetType() ?? genericArguments.Skip(1).First();
-
-                                // compare the key
-                                if (leftKvpKey != null && !leftKeyType.IsValueType && leftKeyType != typeof(string))
-                                    differences = RecurseProperties(leftKvpKey, rightKvpKey, leftValue, differences, currentDepth, maxDepth, objectTree, path, options, ignorePropertiesOrPaths);
-                                else
+                                rightValue = bValueEnumerator?.Current;
+                                if (leftValue == null && rightValue == null)
+                                    continue;
+                                if (leftValue == null && rightValue != null)
+                                    differences.Add(new Difference(rightValue?.GetType() ?? elementType, propertyName, path, arrayIndex, leftValue, rightValue, typeConverter));
+                                // check array element for difference
+                                if (leftValue != null && !leftValue.GetType().IsValueType && leftValue.GetType() != typeof(string))
                                 {
-                                    if (!IsMatch(leftKvpKey, rightKvpKey))
-                                        differences.Add(new Difference(leftKeyType, propertyName, path, arrayIndex, leftKvpKey, rightKvpKey, typeConverter));
+                                    differences = RecurseProperties(leftValue, rightValue, parent, differences, currentDepth, maxDepth, objectTree, path, options, propertyList);
                                 }
+                                else if (leftValue != null && leftValue.GetType().IsGenericType && leftValue.GetType().GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
+                                {
+                                    // compare keys and values of a KVP
+                                    var leftKvpKey = GetValueForProperty(leftValue, "Key");
+                                    var leftKvpValue = GetValueForProperty(leftValue, "Value");
+                                    var rightKvpKey = GetValueForProperty(rightValue, "Key");
+                                    var rightKvpValue = GetValueForProperty(rightValue, "Value");
 
-                                // compare the value
-                                if (leftKvpValue != null && !leftValueType.IsValueType && leftValueType != typeof(string))
-                                    differences = RecurseProperties(leftKvpValue, rightKvpValue, leftValue, differences, currentDepth, maxDepth, objectTree, path, options, ignorePropertiesOrPaths);
+                                    Type leftKeyType = leftKvpKey?.GetType() ?? genericArguments.First();
+                                    Type leftValueType = leftKvpValue?.GetType() ?? genericArguments.Skip(1).First();
+
+                                    // compare the key
+                                    if (leftKvpKey != null && !leftKeyType.IsValueType && leftKeyType != typeof(string))
+                                        differences = RecurseProperties(leftKvpKey, rightKvpKey, leftValue, differences, currentDepth, maxDepth, objectTree, path, options, propertyList);
+                                    else
+                                    {
+                                        if (!IsMatch(leftKvpKey, rightKvpKey))
+                                            differences.Add(new Difference(leftKeyType, propertyName, path, arrayIndex, leftKvpKey, rightKvpKey, typeConverter));
+                                    }
+
+                                    // compare the value
+                                    if (leftKvpValue != null && !leftValueType.IsValueType && leftValueType != typeof(string))
+                                        differences = RecurseProperties(leftKvpValue, rightKvpValue, leftValue, differences, currentDepth, maxDepth, objectTree, path, options, propertyList);
+                                    else
+                                    {
+                                        if (!IsMatch(leftValue, rightValue))
+                                            differences.Add(new Difference(leftValueType, propertyName, path, arrayIndex, leftKvpValue, rightKvpValue, typeConverter));
+                                    }
+                                }
                                 else
                                 {
                                     if (!IsMatch(leftValue, rightValue))
-                                        differences.Add(new Difference(leftValueType, propertyName, path, arrayIndex, leftKvpValue, rightKvpValue, typeConverter));
+                                        differences.Add(new Difference(leftValue?.GetType() ?? elementType, propertyName, path, arrayIndex, leftValue, rightValue, typeConverter));
                                 }
                             }
                             else
                             {
-                                if (!IsMatch(leftValue, rightValue))
-                                    differences.Add(new Difference(leftValue?.GetType() ?? elementType, propertyName, path, arrayIndex, leftValue, rightValue, typeConverter));
+                                // left has a value in collection, right does not. That's a difference
+                                rightValue = null;
+                                differences.Add(new Difference(leftValue?.GetType() ?? elementType, propertyName, path, arrayIndex, leftValue, rightValue, typeConverter));
                             }
+                            arrayIndex++;
                         }
-                        else
+                        if (bValueCollectionCount > arrayIndex)
                         {
-                            // left has a value in collection, right does not. That's a difference
-                            rightValue = null;
-                            differences.Add(new Difference(leftValue?.GetType() ?? elementType, propertyName, path, arrayIndex, leftValue, rightValue, typeConverter));
-                        }
-                        arrayIndex++;
-                    }
-                    if (bValueCollectionCount > arrayIndex)
-                    {
-                        // right side has extra elements
-                        var rightSideExtraElements = bValueCollectionCount - arrayIndex;
-                        if (bValueEnumerator != null)
-                        {
-                            for (var i = 0; i < rightSideExtraElements; i++)
+                            // right side has extra elements
+                            var rightSideExtraElements = bValueCollectionCount - arrayIndex;
+                            if (bValueEnumerator != null)
                             {
-                                var hasValue = bValueEnumerator?.MoveNext() ?? false;
-                                if (hasValue)
+                                for (var i = 0; i < rightSideExtraElements; i++)
                                 {
-                                    differences.Add(new Difference(aValueCollection.GetType(), propertyName, path, arrayIndex, null, bValueEnumerator.Current, typeConverter));
-                                    arrayIndex++;
+                                    var hasValue = bValueEnumerator?.MoveNext() ?? false;
+                                    if (hasValue)
+                                    {
+                                        differences.Add(new Difference(aValueCollection.GetType(), propertyName, path, arrayIndex, null, bValueEnumerator.Current, typeConverter));
+                                        arrayIndex++;
+                                    }
                                 }
                             }
                         }
                     }
+                    else
+                    {
+                        // compare elements can be of different order (use the hashcode for this)
+                        var leftHashCodeEntryList = new Dictionary<int, CollectionKey>(); // hashcode, value/count
+                        var rightHashCodeEntryList = new Dictionary<int, CollectionKey>(); // hashcode, value/count
+                        foreach (var collectionItem in aValueCollection)
+                        {
+                            var hashCode = collectionItem.GetHashCode();
+                            if (leftHashCodeEntryList.ContainsKey(hashCode))
+                            {
+                                var val = leftHashCodeEntryList[hashCode];
+                                val.Matches++;
+                            }
+                            else
+                                leftHashCodeEntryList.Add(hashCode, new CollectionKey(collectionItem, 1));
+                        }
+                        foreach (var collectionItem in bValueCollection)
+                        {
+                            var hashCode = collectionItem.GetHashCode();
+                            if (rightHashCodeEntryList.ContainsKey(hashCode))
+                            {
+                                var val = rightHashCodeEntryList[hashCode];
+                                val.Matches++;
+                            }
+                            else
+                                rightHashCodeEntryList.Add(hashCode, new CollectionKey(collectionItem, 1));
+                        }
+                        var orderedLeft = leftHashCodeEntryList.OrderBy(x => x.Key);
+                        var orderedRight = rightHashCodeEntryList.OrderBy(x => x.Key);
+                        // compare the left collection
+                        foreach(var item in orderedLeft)
+                        {
+                            var matchFound = orderedRight.Any(x => x.Key == item.Key);
+                            if (!matchFound)
+                            {
+                                differences.Add(new Difference((leftValue ?? rightValue).GetType(), propertyName, path, arrayIndex, item.Value.Value, null, typeConverter));
+                            }
+                            arrayIndex++;
+                        }
+                        arrayIndex = 0;
+                        // compare the right collection
+                        foreach (var item in orderedRight)
+                        {
+                            var matchFound = orderedLeft.Any(x => x.Key == item.Key);
+                            if (!matchFound)
+                            {
+                                differences.Add(new Difference((leftValue ?? rightValue).GetType(), propertyName, path, arrayIndex, null, item.Value.Value, typeConverter));
+                            }
+                            arrayIndex++;
+                        }
+                    }
+
                 }
             }
             else if (!propertyType.IsValueType && propertyType != typeof(string))
             {
-                differences = RecurseProperties(leftValue, rightValue, leftValue, differences, currentDepth, maxDepth, objectTree, path, options, ignorePropertiesOrPaths);
+                differences = RecurseProperties(leftValue, rightValue, leftValue, differences, currentDepth, maxDepth, objectTree, path, options, propertyList);
             }
             else
             {
@@ -402,7 +458,7 @@ namespace AnyDiff
             if (enumerable == null)
                 return 0L;
             var count = 0L;
-			var enumerableType = enumerable.GetType().GetExtendedType(_defaultTypeSupportOptions);
+            var enumerableType = enumerable.GetType().GetExtendedType(DefaultTypeSupportOptions);
             if (enumerableType.IsCollection)
                 return ((ICollection)enumerable).Count;
             if (enumerableType.IsArray)
@@ -443,25 +499,36 @@ namespace AnyDiff
         }
 
         /// <summary>
-        /// Returns true if object name should be ignored
+        /// Returns if the object/property should be included or excluded
         /// </summary>
         /// <param name="name">Property or field name</param>
         /// <param name="path">Full path to object</param>
         /// <param name="options">Comparison options</param>
-        /// <param name="ignorePropertiesOrPaths">List of names or paths to ignore</param>
+        /// <param name="propertyList">List of names or paths to process for inclusion or exclusion</param>
         /// <returns></returns>
-        private bool IgnoreObjectName(string name, string path, ComparisonOptions options, ICollection<string> ignorePropertiesOrPaths, IEnumerable<CustomAttributeData> attributes)
+        private FilterResult GetPropertyInclusionState(string name, string path, ComparisonOptions options, ICollection<string> propertyList, IEnumerable<CustomAttributeData> attributes)
         {
-            var ignoreByNameOrPath = ignorePropertiesOrPaths?.Contains(name) == true || ignorePropertiesOrPaths?.Contains(path) == true;
-            if (ignoreByNameOrPath)
-                return true;
+            var isIncludeList = options.BitwiseHasFlag(ComparisonOptions.IncludeList);
+            var isExcludeList = !isIncludeList || options.BitwiseHasFlag(ComparisonOptions.ExcludeList);
+
+            var excludeByNameOrPath = isExcludeList && (propertyList?.Contains(name) == true || propertyList?.Contains(path) == true);
+            if (excludeByNameOrPath)
+                return FilterResult.Exclude; // exclude the property (by being in the exclusion list)
+
+            if (isIncludeList)
+            {
+                var includeByNameOrPath = (propertyList?.Contains(name) == true || propertyList?.Contains(path) == true);
+                if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(path) || includeByNameOrPath)
+                    return FilterResult.Include; // include the property
+                return FilterResult.Exclude; // exclude the property (by not being in inclusion list)
+            }
 #if FEATURE_CUSTOM_ATTRIBUTES
             if (attributes?.Any(x => !options.BitwiseHasFlag(ComparisonOptions.DisableIgnoreAttributes) && (_ignoreAttributes.Contains(x.AttributeType) || _ignoreAttributes.Contains(x.AttributeType.Name))) == true)
 #else
             if (attributes?.Any(x => !options.BitwiseHasFlag(ComparisonOptions.DisableIgnoreAttributes) && (_ignoreAttributes.Contains(x.Constructor.DeclaringType) || _ignoreAttributes.Contains(x.Constructor.DeclaringType.Name))) == true)
 #endif
-                return true;
-            return false;
+                return FilterResult.Exclude; // exclude the property (by attribute)
+            return FilterResult.Include; // include the property (default)
         }
 
         private static object GetValueForProperty(object obj, string propertyName)
@@ -492,6 +559,23 @@ namespace AnyDiff
                 isMatch = true;
             }
             return isMatch;
+        }
+
+        private enum FilterResult
+        {
+            Exclude,
+            Include
+        }
+
+        private class CollectionKey
+        {
+            public object Value { get; set; }
+            public int Matches { get; set; }
+            public CollectionKey(object value, int matches)
+            {
+                Value = value;
+                Matches = matches;
+            }
         }
     }
 }
