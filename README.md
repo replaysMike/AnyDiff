@@ -90,6 +90,28 @@ var diff = object1.Diff(object2, x => x.Id, x => x.Name);
 Assert.AreEqual(diff.Count, 0);
 ```
 
+### Inclusion of Properties
+
+AnyDiff also supports processing of specific properties if you don't want to diff the entire object. This works using the same syntax as ignoring properties but passing a different ComparisonOptions. In the example below, only the properties `Id` and `Name` will be compared.
+
+```csharp
+var object1 = new MyComplexObject(1, "A string", true);
+var object2 = new MyComplexObject(2, "A different string", true);
+var diff = object1.Diff(object2, ComparisonOptions.All | ComparisonOptions.IncludeList, x => x.Id, x => x.Name);
+Assert.AreEqual(diff.Count, 0);
+```
+
+### Comparing Unordered lists
+
+If you wish to perform a diff that ignores the ordering of data in a collection/list, you can specify that behavior with a ComparisonOptions flag as seen below.
+
+```csharp
+var list1 = new List<int> { 1, 2, 3 };
+var list2 = new List<int> { 1, 3, 2 };
+var diff = list1.Diff(list2, ComparisonOptions.All | ComparisonOptions.AllowCollectionsToBeOutOfOrder);
+Assert.AreEqual(diff.Count, 0);
+```
+
 ### Analyzing results
 
 Viewing the results of a diff:
