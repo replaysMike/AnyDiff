@@ -33,13 +33,17 @@ namespace AnyDiff
         /// </summary>
         AllowCollectionsToBeOutOfOrder = 32,
         /// <summary>
+        /// Specify if you want to allow Equals overrides for object comparison
+        /// </summary>
+        AllowEqualsOverride = 64,
+        /// <summary>
         /// Specify the property list passed is an include list
         /// </summary>
-        IncludeList = 64,
+        IncludeList = 128,
         /// <summary>
         /// Specify the property list passed is an exclude list (default)
         /// </summary>
-        ExcludeList = 128,
+        ExcludeList = 256,
         /// <summary>
         /// Compare all objects
         /// </summary>

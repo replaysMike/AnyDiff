@@ -23,7 +23,7 @@ namespace AnyDiff
         /// <summary>
         /// The default type support options to use
         /// </summary>
-        private const TypeSupportOptions DefaultTypeSupportOptions = TypeSupportOptions.Collections | TypeSupportOptions.Attributes | TypeSupportOptions.Caching;
+        public static TypeSupportOptions DefaultTypeSupportOptions = TypeSupportOptions.Collections | TypeSupportOptions.Attributes | TypeSupportOptions.Caching | TypeSupportOptions.Methods;
 
         /// <summary>
         /// The list of attributes to use when ignoring fields/properties
@@ -179,6 +179,13 @@ namespace AnyDiff
                 return differences;
             if (typeSupport.IsDelegate)
                 return differences;
+
+            if (options.BitwiseHasFlag(ComparisonOptions.AllowEqualsOverride))
+            {
+                var objectEquality = CompareForObjectEquality(typeSupport, left, right);
+                if (objectEquality)
+                    return differences; // no differences found, no need to continue
+            }
 
             // increment the current recursion depth
             currentDepth++;
@@ -423,7 +430,7 @@ namespace AnyDiff
                         var orderedLeft = leftHashCodeEntryList.OrderBy(x => x.Key);
                         var orderedRight = rightHashCodeEntryList.OrderBy(x => x.Key);
                         // compare the left collection
-                        foreach(var item in orderedLeft)
+                        foreach (var item in orderedLeft)
                         {
                             var matchFound = orderedRight.Where(x => x.Key == item.Key).Select(x => x.Value).FirstOrDefault();
                             if (matchFound == null)
@@ -515,6 +522,50 @@ namespace AnyDiff
         }
 
         /// <summary>
+        /// Returns true if two objects match equality
+        /// </summary>
+        /// <param name="typeSupport">The extended type for the left object</param>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <returns></returns>
+        private bool CompareForObjectEquality(ExtendedType typeSupport, object left, object right)
+        {
+            // order of precedence: IEquatable => Equals => (==)
+            // if the object implements IEquatable, use it
+            var hasIEquatable = typeSupport.Implements(typeof(IEquatable<>));
+            if (hasIEquatable)
+            {
+                var equatableMethod = typeSupport.Methods?.FirstOrDefault(x => x.Name == "Equals" && x.Parameters.Any(y => y.ParameterType == typeSupport.Type));
+                var isEquatable = (bool)equatableMethod?.MethodInfo.Invoke(left, new object[] { right }) == true;
+                if (isEquatable)
+                    return true; // no differences found
+            }
+            else
+            {
+                // if the object overrides Equals(), use it
+                var hasEqualsOverride = typeSupport.Methods?.Any(x => x.Name == "Equals" && x.IsOverride) == true;
+                if (hasEqualsOverride)
+                {
+                    if (left.Equals(right))
+                        return true; // no differences found
+                }
+                else
+                {
+                    // if the object overrides the equality operator (==), use it
+                    var hasEqualityOperator = typeSupport.Methods?.Any(x => x.Name == "op_Equality" && x.IsOperatorOverload) == true;
+                    if (hasEqualityOperator)
+                    {
+                        var operatorMethod = typeSupport.Methods?.FirstOrDefault(x => x.Name == "op_Equality" && x.Parameters.All(y => y.ParameterType == typeSupport.Type));
+                        var isEqual = (bool)operatorMethod?.MethodInfo.Invoke(left, new object[] { left, right }) == true;
+                        if (isEqual)
+                            return true; // no differences found
+                    }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Returns if the object/property should be included or excluded
         /// </summary>
         /// <param name="name">Property or field name</param>
@@ -562,14 +613,17 @@ namespace AnyDiff
         private static bool IsMatch(object leftValue, object rightValue)
         {
             var isMatch = false;
-            if (leftValue == null && rightValue == null)
+            // both values being null are a match
+            if (ReferenceEquals(leftValue, null) && ReferenceEquals(rightValue, null))
             {
                 isMatch = true;
             }
-            else if (leftValue == null || rightValue == null)
+            // only one value being null is not a match
+            else if (ReferenceEquals(leftValue, null) || ReferenceEquals(rightValue, null))
             {
                 isMatch = false;
             }
+            // use equality check
             else if (leftValue.Equals(rightValue))
             {
                 isMatch = true;
