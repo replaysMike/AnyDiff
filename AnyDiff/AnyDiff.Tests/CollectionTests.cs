@@ -1,6 +1,7 @@
 ﻿using AnyDiff.Tests.TestObjects;
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace AnyDiff.Tests
@@ -248,6 +249,86 @@ namespace AnyDiff.Tests
             var obj2 = new TestObject { IntArray = new int[] { 2, 5, 4, 3, 1, 3 } };
             var diff = provider.ComputeDiff<TestObject>(obj1, obj2, ComparisonOptions.All | ComparisonOptions.AllowCollectionsToBeOutOfOrder);
             Assert.AreEqual(1, diff.Count);
+        }
+
+        [Test]
+        public void ShouldDetect_ReadOnlyCollection_NoDifferences()
+        {
+            var provider = new DiffProvider();
+            var list = new List<EqualsObject> {
+                new EqualsObject(1, "Testing 1"),
+                new EqualsObject(2, "Testing 2"),
+            };
+            var list2 = new List<EqualsObject> {
+                new EqualsObject(1, "Testing 1"),
+                new EqualsObject(2, "Testing 2"),
+            };
+            var obj1 = new ReadOnlyCollectionObject(list);
+            var obj2 = new ReadOnlyCollectionObject(list2);
+            var diff = provider.ComputeDiff<ReadOnlyCollectionObject>(obj1, obj2, ComparisonOptions.All | ComparisonOptions.IncludeList | ComparisonOptions.AllowCollectionsToBeOutOfOrder | ComparisonOptions.AllowEqualsOverride,
+                    x => x.Collection);
+
+            Assert.AreEqual(0, diff.Count);
+        }
+
+        [Test]
+        public void ShouldDetect_ReadOnlyCollection_CustomEquals_AreDifferent()
+        {
+            var provider = new DiffProvider();
+            var list = new List<EqualsObject> {
+                new EqualsObject(1, "Testing 1"),
+                new EqualsObject(2, "Testing 2"),
+            };
+            var list2 = new List<EqualsObject> {
+                new EqualsObject(1, "Testing 1"),
+                new EqualsObject(3, "This line is entirely different"),
+            };
+            var obj1 = new ReadOnlyCollectionObject(list);
+            var obj2 = new ReadOnlyCollectionObject(list2);
+            var diff = provider.ComputeDiff<ReadOnlyCollectionObject>(obj1, obj2, ComparisonOptions.All | ComparisonOptions.IncludeList | ComparisonOptions.AllowCollectionsToBeOutOfOrder | ComparisonOptions.AllowEqualsOverride,
+                    x => x.Collection);
+
+            Assert.Greater(diff.Count, 0);
+        }
+
+        [Test]
+        public void ShouldDetect_ReadOnlyCollection_AreDifferent()
+        {
+            var provider = new DiffProvider();
+            var list = new List<EqualsObject> {
+                new EqualsObject(1, "Testing 1"),
+                new EqualsObject(2, "Testing 2"),
+            };
+            var list2 = new List<EqualsObject> {
+                new EqualsObject(1, "Testing 1"),
+                new EqualsObject(3, "Testing 3"),
+            };
+            var obj1 = new ReadOnlyCollectionObject(list);
+            var obj2 = new ReadOnlyCollectionObject(list2);
+            var diff = provider.ComputeDiff<ReadOnlyCollectionObject>(obj1, obj2, ComparisonOptions.All | ComparisonOptions.IncludeList | ComparisonOptions.AllowEqualsOverride,
+                    x => x.Collection);
+
+            Assert.Greater(diff.Count, 0);
+        }
+
+        [Test]
+        public void ShouldDetect_ReadOnlyCollection_OutOfOrder_AreDifferent()
+        {
+            var provider = new DiffProvider();
+            var list = new List<EqualsObject> {
+                new EqualsObject(1, "Testing 1"),
+                new EqualsObject(2, "Testing 2"),
+            };
+            var list2 = new List<EqualsObject> {
+                new EqualsObject(1, "Testing 1"),
+                new EqualsObject(3, "Testing 3"),
+            };
+            var obj1 = new ReadOnlyCollectionObject(list);
+            var obj2 = new ReadOnlyCollectionObject(list2);
+            var diff = provider.ComputeDiff<ReadOnlyCollectionObject>(obj1, obj2, ComparisonOptions.All | ComparisonOptions.IncludeList | ComparisonOptions.AllowCollectionsToBeOutOfOrder | ComparisonOptions.AllowEqualsOverride,
+                    x => x.Collection);
+
+            Assert.Greater(diff.Count, 0);
         }
     }
 }

@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="TypeSupport" Version="1.0.88" />
+    <PackageReference Include="TypeSupport" Version="1.0.89" />
   </ItemGroup>
 
 </Project>

@@ -439,8 +439,11 @@ namespace AnyDiff
                             }
                             else
                             {
-                                // also compare that the number of instances of the value in a collection are the same
-                                if (matchFound.Matches != item.Value.Matches && item.Value.Matches > matchFound.Matches)
+                                var isEqual = CompareForObjectEquality(item.Value.Value.GetExtendedType(DefaultTypeSupportOptions), item.Value.Value, matchFound.Value);
+                                if (!isEqual)
+                                    differences.Add(new Difference((leftValue ?? rightValue).GetType(), propertyName, path, item.Value.OriginalIndex, item.Value.Value, null, typeConverter));
+                                else if (matchFound.Matches != item.Value.Matches && item.Value.Matches > matchFound.Matches)
+                                    // also compare that the number of instances of the value in a collection are the same
                                     differences.Add(new Difference((leftValue ?? rightValue).GetType(), propertyName, path, item.Value.OriginalIndex, item.Value.Value, null, typeConverter));
                             }
                         }
@@ -454,8 +457,11 @@ namespace AnyDiff
                             }
                             else
                             {
-                                // also compare that the number of instances of the value in a collection are the same
-                                if (matchFound.Matches != item.Value.Matches && item.Value.Matches > matchFound.Matches)
+                                var isEqual = CompareForObjectEquality(item.Value.Value.GetExtendedType(DefaultTypeSupportOptions), item.Value.Value, matchFound.Value);
+                                if (!isEqual)
+                                    differences.Add(new Difference((leftValue ?? rightValue).GetType(), propertyName, path, item.Value.OriginalIndex, null, item.Value.Value, typeConverter));
+                                else if (matchFound.Matches != item.Value.Matches && item.Value.Matches > matchFound.Matches)
+                                    // also compare that the number of instances of the value in a collection are the same
                                     differences.Add(new Difference((leftValue ?? rightValue).GetType(), propertyName, path, item.Value.OriginalIndex, null, item.Value.Value, typeConverter));
                             }
                         }
@@ -585,6 +591,14 @@ namespace AnyDiff
             if (isIncludeList)
             {
                 var includeByNameOrPath = (propertyList?.Contains(name) == true || propertyList?.Contains(path) == true);
+                // for inclusion lists, allow children of parents who are allowed
+                if (!includeByNameOrPath)
+                {
+                    var pathParts = path.Split('.');
+                    var pathPartsList = pathParts.Skip(1).Take(pathParts.Length - 2).ToList();
+                    includeByNameOrPath = pathPartsList.Intersect(propertyList).Any();
+                }
+
                 if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(path) || includeByNameOrPath)
                     return FilterResult.Include; // include the property
                 return FilterResult.Exclude; // exclude the property (by not being in inclusion list)
