@@ -122,22 +122,12 @@ namespace AnyDiff
         public ICollection<Difference> ComputeDiff<T>(T left, T right, int maxDepth, ComparisonOptions options, params Expression<Func<T, object>>[] propertyList)
         {
             var ignorePropertiesList = new List<string>();
+            var expressionManager = new ExpressionManager();
             if (propertyList != null)
             {
                 foreach (var expression in propertyList)
                 {
-                    var name = "";
-                    switch (expression.Body)
-                    {
-                        case MemberExpression m:
-                            name = m.Member.Name;
-                            break;
-                        case UnaryExpression u when u.Operand is MemberExpression m:
-                            name = m.Member.Name;
-                            break;
-                        default:
-                            throw new NotImplementedException(expression.GetType().ToString());
-                    }
+                    var name = expressionManager.GetPropertyPath(expression.Body);
                     ignorePropertiesList.Add(name);
                 }
             }
@@ -590,13 +580,19 @@ namespace AnyDiff
 
             if (isIncludeList)
             {
+                var noInheritance = options.BitwiseHasFlag(ComparisonOptions.IncludeListNoInheritance);
                 var includeByNameOrPath = (propertyList?.Contains(name) == true || propertyList?.Contains(path) == true);
-                // for inclusion lists, allow children of parents who are allowed
-                if (!includeByNameOrPath)
+                if (!includeByNameOrPath && !noInheritance)
                 {
+                    // for inclusion lists, if the parent path is allowed then allow its children
                     var pathParts = path.Split('.');
-                    var pathPartsList = pathParts.Skip(1).Take(pathParts.Length - 2).ToList();
-                    includeByNameOrPath = pathPartsList.Intersect(propertyList).Any();
+                    var parentPaths = pathParts.Skip(1).Take(pathParts.Length - 2).Select(x => $".{x}").ToList();
+                    foreach(var parentPath in parentPaths)
+                    {
+                        includeByNameOrPath = propertyList.Contains(parentPath);
+                        if (includeByNameOrPath)
+                            break;
+                    }
                 }
 
                 if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(path) || includeByNameOrPath)

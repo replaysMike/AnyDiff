@@ -45,6 +45,10 @@ namespace AnyDiff
         /// </summary>
         ExcludeList = 256,
         /// <summary>
+        /// Specify the IncludeList should not inherit children unless specified
+        /// </summary>
+        IncludeListNoInheritance = 512,
+        /// <summary>
         /// Compare all objects
         /// </summary>
         All = CompareProperties | CompareFields | CompareCollections,
