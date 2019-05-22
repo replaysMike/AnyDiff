@@ -107,7 +107,7 @@ namespace AnyDiff
         /// <returns></returns>
         public ICollection<Difference> ComputeDiff(object left, object right, int maxDepth, ComparisonOptions options, params string[] propertyList)
         {
-            return RecurseProperties(left, right, null, new List<Difference>(), 0, maxDepth, new HashSet<ObjectHashcode>(), string.Empty, options, propertyList);
+            return RecurseProperties(left, right, null, new List<Difference>(), 0, maxDepth, new ObjectHashcodeMap(), string.Empty, options, propertyList);
         }
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace AnyDiff
                     ignorePropertiesList.Add(name);
                 }
             }
-            return RecurseProperties(left, right, null, new List<Difference>(), 0, maxDepth, new HashSet<ObjectHashcode>(), string.Empty, options, ignorePropertiesList);
+            return RecurseProperties(left, right, null, new List<Difference>(), 0, maxDepth, new ObjectHashcodeMap(), string.Empty, options, ignorePropertiesList);
         }
 
         /// <summary>
@@ -148,7 +148,7 @@ namespace AnyDiff
         /// <param name="options">Specify the comparison options</param>
         /// <param name="propertyList">A list of property names or full path names to ignore</param>
         /// <returns></returns>
-        private ICollection<Difference> RecurseProperties(object left, object right, object parent, ICollection<Difference> differences, int currentDepth, int maxDepth, HashSet<ObjectHashcode> objectTree, string path, ComparisonOptions options, ICollection<string> propertyList)
+        private ICollection<Difference> RecurseProperties(object left, object right, object parent, ICollection<Difference> differences, int currentDepth, int maxDepth, ObjectHashcodeMap objectTree, string path, ComparisonOptions options, ICollection<string> propertyList)
         {
             if (GetPropertyInclusionState(null, path, options, propertyList, null) == FilterResult.Exclude)
                 return differences;
@@ -184,11 +184,9 @@ namespace AnyDiff
             // we use this hashcode method as it does not use any custom hashcode handlers the object might implement
             if (left != null)
             {
-                var hashCode = System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(left);
-                var key = new ObjectHashcode(hashCode, typeSupport.Type);
-                if (objectTree.Contains(key))
+                if (objectTree.Contains(left))
                     return differences;
-                objectTree.Add(key);
+                objectTree.Add(left);
             }
 
             // get list of properties
@@ -266,7 +264,7 @@ namespace AnyDiff
         /// <param name="options">Specify the comparison options</param>
         /// <param name="propertyList">A list of property names or full path names to ignore</param>
         /// <returns></returns>
-        private ICollection<Difference> GetDifferences(string propertyName, Type propertyType, TypeConverter typeConverter, object left, object right, object parent, ICollection<Difference> differences, int currentDepth, int maxDepth, HashSet<ObjectHashcode> objectTree, string path, ComparisonOptions options, ICollection<string> propertyList)
+        private ICollection<Difference> GetDifferences(string propertyName, Type propertyType, TypeConverter typeConverter, object left, object right, object parent, ICollection<Difference> differences, int currentDepth, int maxDepth, ObjectHashcodeMap objectTree, string path, ComparisonOptions options, ICollection<string> propertyList)
         {
             if (GetPropertyInclusionState(propertyName, path, options, propertyList, null) == FilterResult.Exclude)
                 return differences;
