@@ -33,6 +33,17 @@ namespace AnyDiff.Tests
         }
 
         [Test]
+        public void Should_CreatePath_WithChildrenFirst()
+        {
+            var manager = new ExpressionManager();
+            var expressions = CreateExpressions<ComplexObjectWithListChildren>(
+                x => x.Children.First().BasicChild.BasicChildId
+            );
+            var paths = expressions.Select(x => manager.GetPropertyPath(x)).ToList();
+            CollectionAssert.AreEqual(new[] { ".Children.BasicChild.BasicChildId" }, paths);
+        }
+
+        [Test]
         public void Should_CreatePath_WithChildrenSubselect()
         {
             var manager = new ExpressionManager();
@@ -62,6 +73,18 @@ namespace AnyDiff.Tests
                 ".Name",
                 ".Children.BasicChild.BasicChildId",
                 ".BasicChild.Children.BasicChildId",
+                ".BasicChild.Children.Children.BasicChildName"}, paths);
+        }
+
+        [Test]
+        public void Should_CreatePath_WithDeepFirst()
+        {
+            var manager = new ExpressionManager();
+            var expressions = CreateExpressions<ComplexObjectWithListChildren>(
+                x => x.BasicChild.Children.Select(y => y.Children.First().BasicChildName)
+            );
+            var paths = expressions.Select(x => manager.GetPropertyPath(x)).ToList();
+            CollectionAssert.AreEqual(new[] {
                 ".BasicChild.Children.Children.BasicChildName"}, paths);
         }
 
