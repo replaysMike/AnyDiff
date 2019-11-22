@@ -332,6 +332,9 @@ namespace AnyDiff
             if (leftValue == null && rightValue == null)
                 return differences;
 
+            var leftValueType = leftValue?.GetType() ?? propertyType;
+            var rightValueType = rightValue?.GetType() ?? propertyType;
+
             if (isCollection && options.BitwiseHasFlag(ComparisonOptions.CompareCollections))
             {
                 var genericArguments = propertyType.GetGenericArguments();
@@ -380,25 +383,25 @@ namespace AnyDiff
                                     var rightKvpKey = GetValueForProperty(rightValue, "Key");
                                     var rightKvpValue = GetValueForProperty(rightValue, "Value");
 
-                                    Type leftKeyType = leftKvpKey?.GetType() ?? genericArguments.First();
-                                    Type leftValueType = leftKvpValue?.GetType() ?? genericArguments.Skip(1).First();
+                                    var leftKvpKeyType = leftKvpKey?.GetType() ?? genericArguments.First();
+                                    var leftKvpValueType = leftKvpValue?.GetType() ?? genericArguments.Skip(1).First();
 
                                     // compare the key
-                                    if (leftKvpKey != null && !leftKeyType.IsValueType && leftKeyType != typeof(string))
+                                    if (leftKvpKey != null && !leftKvpKeyType.IsValueType && leftKvpKeyType != typeof(string))
                                         differences = RecurseProperties(leftKvpKey, rightKvpKey, leftValue, differences, currentDepth, maxDepth, objectTree, path, options, propertyList, diffOptions);
                                     else
                                     {
                                         if (!IsMatch(leftKvpKey, rightKvpKey))
-                                            differences.Add(new Difference(leftKeyType, propertyName, path, arrayIndex, leftKvpKey, rightKvpKey, typeConverter));
+                                            differences.Add(new Difference(leftKvpKeyType, propertyName, path, arrayIndex, leftKvpKey, rightKvpKey, typeConverter));
                                     }
 
                                     // compare the value
-                                    if (leftKvpValue != null && !leftValueType.IsValueType && leftValueType != typeof(string))
+                                    if (leftKvpValue != null && !leftKvpValueType.IsValueType && leftKvpValueType != typeof(string))
                                         differences = RecurseProperties(leftKvpValue, rightKvpValue, leftValue, differences, currentDepth, maxDepth, objectTree, path, options, propertyList, diffOptions);
                                     else
                                     {
                                         if (!IsMatch(leftValue, rightValue))
-                                            differences.Add(new Difference(leftValueType, propertyName, path, arrayIndex, leftKvpValue, rightKvpValue, typeConverter));
+                                            differences.Add(new Difference(leftKvpValueType, propertyName, path, arrayIndex, leftKvpValue, rightKvpValue, typeConverter));
                                     }
                                 }
                                 else
@@ -508,7 +511,7 @@ namespace AnyDiff
 
                 }
             }
-            else if (!propertyType.IsValueType && propertyType != typeof(string))
+            else if (!leftValueType.IsValueType && leftValueType != typeof(string))
             {
                 differences = RecurseProperties(leftValue, rightValue, leftValue, differences, currentDepth, maxDepth, objectTree, path, options, propertyList, diffOptions);
             }
@@ -531,6 +534,18 @@ namespace AnyDiff
                 return ((ICollection)enumerable).Count;
             if (enumerableType.IsArray)
                 return ((Array)enumerable).LongLength;
+            if (enumerableType.IsEnumerable)
+            {
+                ExtendedMethod countMethod;
+                countMethod = enumerableType.Methods.FirstOrDefault(x => x.Name.Equals("get_Count", StringComparison.CurrentCultureIgnoreCase));
+                if (countMethod == null)
+                    countMethod = enumerableType.Methods.FirstOrDefault(x => x.Name.Equals("Count", StringComparison.CurrentCultureIgnoreCase));
+                if (countMethod != null)
+                {
+                    var retVal = countMethod.MethodInfo.Invoke(enumerable, null);
+                    return Convert.ToInt64(retVal);
+                }
+            }
 
             // count the enumerable
             foreach (var row in enumerable)
