@@ -1,5 +1,7 @@
 ﻿using NUnit.Framework;
 using System.Drawing;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace AnyDiff.Tests
 {
@@ -46,6 +48,13 @@ namespace AnyDiff.Tests
             Assert.AreEqual(1, diff.Count);
         }
 
-        
+        [Test]
+        public void ShouldDiff_JToken()
+        {
+            var obj1 = JToken.Parse(@"{ ""list"": [""test1"", ""test2""] }");
+            var obj2 = JToken.Parse(@"{ ""list"": [""test3"", ""test4""] }");
+            var diff = AnyDiff.Diff(obj1, obj2);
+            Assert.AreEqual(4, diff.Count);
+        }
     }
 }
