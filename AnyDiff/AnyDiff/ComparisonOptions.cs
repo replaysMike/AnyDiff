@@ -49,6 +49,10 @@ namespace AnyDiff
         /// </summary>
         IncludeListNoInheritance = 512,
         /// <summary>
+        /// Specify that an empty list and a null list would be an equal comparison
+        /// </summary>
+        TreatEmptyListAndNullTheSame = 1024,
+        /// <summary>
         /// Compare all objects
         /// </summary>
         All = CompareProperties | CompareFields | CompareCollections,

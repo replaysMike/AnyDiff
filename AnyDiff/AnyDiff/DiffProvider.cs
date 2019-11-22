@@ -269,6 +269,9 @@ namespace AnyDiff
             if (GetPropertyInclusionState(propertyName, path, options, propertyList, null) == FilterResult.Exclude)
                 return differences;
 
+            var propertyTypeSupport = propertyType.GetExtendedType(DefaultTypeSupportOptions);
+            var isCollection = propertyType != typeof(string) && propertyType.GetInterface(nameof(IEnumerable)) != null;
+
             object leftValue = null;
             object rightValue = null;
             leftValue = left;
@@ -278,17 +281,18 @@ namespace AnyDiff
             else
                 rightValue = right;
 
-            if (rightValue == null && leftValue != null || leftValue == null && rightValue != null)
+            if (!isCollection || (isCollection && !options.BitwiseHasFlag(ComparisonOptions.TreatEmptyListAndNullTheSame)))
             {
-                differences.Add(new Difference((leftValue ?? rightValue).GetType(), propertyName, path, leftValue, rightValue, typeConverter));
-                return differences;
+                if (rightValue == null && leftValue != null || leftValue == null && rightValue != null)
+                {
+                    differences.Add(new Difference((leftValue ?? rightValue).GetType(), propertyName, path, leftValue, rightValue, typeConverter));
+                    return differences;
+                }
             }
 
             if (leftValue == null && rightValue == null)
                 return differences;
 
-            var propertyTypeSupport = propertyType.GetExtendedType(DefaultTypeSupportOptions);
-            var isCollection = propertyType != typeof(string) && propertyType.GetInterface(nameof(IEnumerable)) != null;
             if (isCollection && options.BitwiseHasFlag(ComparisonOptions.CompareCollections))
             {
                 var genericArguments = propertyType.GetGenericArguments();
@@ -296,9 +300,17 @@ namespace AnyDiff
                 var elementType = propertyTypeSupport.ElementType;
                 // iterate the collection
                 var aValueCollection = (leftValue as IEnumerable);
+                var aValueCollectionCount = GetCountFromEnumerable(aValueCollection);
                 var bValueCollection = (rightValue as IEnumerable);
                 var bValueCollectionCount = GetCountFromEnumerable(bValueCollection);
                 var bValueEnumerator = bValueCollection?.GetEnumerator();
+                if (options.BitwiseHasFlag(ComparisonOptions.TreatEmptyListAndNullTheSame)
+                    && aValueCollectionCount == 0 && bValueCollectionCount == 0)
+                {
+                    // skip collection equality check, they both have no elements or are null
+                    return differences;
+                }
+
                 if (aValueCollection != null)
                 {
                     if (!options.BitwiseHasFlag(ComparisonOptions.AllowCollectionsToBeOutOfOrder))
