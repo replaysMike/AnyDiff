@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using AnyDiff;
 using AnyDiff.Extensions;
 using AnyDiff.Tests.TestObjects;
 using NUnit.Framework;
@@ -192,6 +191,28 @@ namespace AnyDiff.Tests
 
             var diff = object1.Diff(object2, ComparisonOptions.All | ComparisonOptions.DisableIgnoreAttributes);
             Assert.AreEqual(1, diff.Count);
+        }
+
+        [Test]
+        public void Should_IgnoreByCustomAttribute()
+        {
+            var object1 = new CustomAttributeObject(1, "A string");
+            var object2 = new CustomAttributeObject(1, "A different string");
+
+            var diffOptions = new DiffOptions(new List<object> { typeof(System.ComponentModel.DescriptionAttribute) });
+            var diff = object1.Diff(object2, ComparisonOptions.All, diffOptions);
+            Assert.AreEqual(0, diff.Count);
+        }
+
+        [Test]
+        public void Should_IgnoreByCustomAttributeName()
+        {
+            var object1 = new CustomAttributeObject(1, "A string");
+            var object2 = new CustomAttributeObject(1, "A different string");
+
+            var diffOptions = new DiffOptions(new List<object> { "DescriptionAttribute" });
+            var diff = object1.Diff(object2, ComparisonOptions.All, diffOptions);
+            Assert.AreEqual(0, diff.Count);
         }
     }
 }
