@@ -69,6 +69,28 @@ namespace AnyDiff.Tests
         }
 
         [Test]
+        public void ShouldBeEqual_EmptyList_Null()
+        {
+            var provider = new DiffProvider();
+
+            var obj1 = new TestObject { IntCollection = new List<int> { } };
+            var obj2 = new TestObject { IntCollection = null };
+            var diff = provider.ComputeDiff<TestObject>(obj1, obj2, ComparisonOptions.All | ComparisonOptions.TreatEmptyListAndNullTheSame);
+            Assert.AreEqual(0, diff.Count);
+        }
+
+        [Test]
+        public void ShouldNotBeEqual_EmptyList_Null()
+        {
+            var provider = new DiffProvider();
+
+            var obj1 = new TestObject { IntCollection = new List<int> { } };
+            var obj2 = new TestObject { IntCollection = null };
+            var diff = provider.ComputeDiff<TestObject>(obj1, obj2, ComparisonOptions.All);
+            Assert.AreEqual(1, diff.Count);
+        }
+
+        [Test]
         public void ShouldDetect_List_NoDifferences()
         {
             var provider = new DiffProvider();
