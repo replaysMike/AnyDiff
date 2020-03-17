@@ -1,7 +1,10 @@
 ﻿using AnyDiff.Tests.TestObjects;
+using AnyDiff.Tests.TestObjects.Complex;
+using Newtonsoft.Json;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 
 namespace AnyDiff.Tests
@@ -109,7 +112,7 @@ namespace AnyDiff.Tests
             var obj1 = new TestObject { IntDictionary = new Dictionary<int, string> { { 0, "1" }, { 1, "2" }, { 2, "3" }, { 3, "4" }, { 4, "5" } } };
             var obj2 = new TestObject { IntDictionary = new Dictionary<int, string> { { 0, "1" }, { 1, "2" }, { 2, "2" }, { 3, "4" }, { 4, "5" } } };
             var diff = provider.ComputeDiff<TestObject>(obj1, obj2);
-            Assert.AreEqual(1, diff.Count);
+            Assert.AreEqual(2, diff.Count);
         }
 
         [Test]
@@ -282,8 +285,8 @@ namespace AnyDiff.Tests
                 new EqualsObject(2, "Testing 2"),
             };
             var list2 = new List<EqualsObject> {
-                new EqualsObject(1, "Testing 1"),
                 new EqualsObject(2, "Testing 2"),
+                new EqualsObject(1, "Testing 1"),
             };
             var obj1 = new ReadOnlyCollectionObject(list);
             var obj2 = new ReadOnlyCollectionObject(list2);
@@ -351,6 +354,58 @@ namespace AnyDiff.Tests
                     x => x.Collection);
 
             Assert.Greater(diff.Count, 0);
+        }
+
+        [Test]
+        public void ShouldDetect_ComplexJson_AllowOutOfOrder_NoDifferences()
+        {
+            var provider = new DiffProvider();
+
+            var left = JsonConvert.DeserializeObject<ComplexDataSpec>(File.ReadAllText(@".\Data\ComplexJson1.json"));
+            var right = JsonConvert.DeserializeObject<ComplexDataSpec>(File.ReadAllText(@".\Data\ComplexJson2.json"));
+
+            var options = ComparisonOptions.All | ComparisonOptions.AllowCollectionsToBeOutOfOrder | ComparisonOptions.AllowEqualsOverride;
+
+            var diff = provider.ComputeDiff<ComplexDataSpec>(left, right, options,
+                x => x.DateCreatedUtc,
+                x => x.DateModifiedUtc,
+                x => x.ChangesetItemHash,
+                x => x.Id,
+                x => x.Rules.Select(y => y.Id),
+                x => x.DayParts.Select(y => y.BuySpecificationDayPartId),
+                x => x.DayParts.Select(y => y.Budgets.Select(z => z.Id)),
+                x => x.DayParts.Select(y => y.Rules.Select(z => z.Id)),
+                // TODO: temp leave these ignores till Name and Code are removed from DspDayPart api model
+                x => x.DayParts.Select(y => y.Name),
+                x => x.DayParts.Select(y => y.Code));
+
+            Assert.AreEqual(0, diff.Count);
+        }
+
+        [Test]
+        public void ShouldDetect_ComplexJson_OutOfOrder_HasDifferences()
+        {
+            var provider = new DiffProvider();
+
+            var left = JsonConvert.DeserializeObject<ComplexDataSpec>(File.ReadAllText(@".\Data\ComplexJson1.json"));
+            var right = JsonConvert.DeserializeObject<ComplexDataSpec>(File.ReadAllText(@".\Data\ComplexJson2-OutOfOrderDemoId.json"));
+
+            var options = ComparisonOptions.All | ComparisonOptions.AllowEqualsOverride;
+
+            var diff = provider.ComputeDiff<ComplexDataSpec>(left, right, options,
+                x => x.DateCreatedUtc,
+                x => x.DateModifiedUtc,
+                x => x.ChangesetItemHash,
+                x => x.Id,
+                x => x.Rules.Select(y => y.Id),
+                x => x.DayParts.Select(y => y.BuySpecificationDayPartId),
+                x => x.DayParts.Select(y => y.Budgets.Select(z => z.Id)),
+                x => x.DayParts.Select(y => y.Rules.Select(z => z.Id)),
+                // TODO: temp leave these ignores till Name and Code are removed from DspDayPart api model
+                x => x.DayParts.Select(y => y.Name),
+                x => x.DayParts.Select(y => y.Code));
+
+            Assert.AreEqual(2, diff.Count);
         }
     }
 }

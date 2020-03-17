@@ -1,0 +1,212 @@
+﻿{
+  "TotalBrandBudget": 0.0,
+  "TotalGRP": 0.0,
+  "AirtimeSeparationId": 6,
+  "MaxSharePerStation": 0.0,
+  "MinSharePerStation": 0.0,
+  "MaxPerWeek": null,
+  "MaxSpotLimitPerWeekOther1h2h": null,
+  "MaxSpotLimitPerWeekOther2h3h": null,
+  "MaxSpotLimitPerWeekOther3hPlus": null,
+  "MaxSpotLimitPerWeekOther30m1h": null,
+  "DigitalAllocationMin": null,
+  "DigitalAllocationMax": null,
+  "MaxLocalCableAllocation": 0.0,
+  "MinLocalCableAllocation": 0.0,
+  "DistributorOrganizationId": 0,
+  "HasDealAttached": false,
+  "LocalCableAllocationNumericType": 1,
+  "DayParts": [
+    {
+      "Id": 5,
+      "BuySpecificationDayPartId": 4776,
+      "Name": null,
+      "Code": null,
+      "WeekdayStartTime": "06:00:00",
+      "WeekdayEndTime": "18:00:00",
+      "SaturdayStartTime": "06:00:00",
+      "SaturdayEndTime": "18:00:00",
+      "SundayStartTime": "06:00:00",
+      "SundayEndTime": "18:00:00",
+      "AllocationPercent": null,
+      "ProgramFilterType": 0,
+      "ProgramFilterValue": 0.0,
+      "CostTableId": null,
+      "MaxPerWeek": 0,
+      "MaxSpotLimitPerWeekOther1h2h": null,
+      "MaxSpotLimitPerWeekOther2h3h": null,
+      "MaxSpotLimitPerWeekOther3hPlus": null,
+      "MaxSpotLimitPerWeekOther30m1h": null,
+      "MaxLocalCableAllocation": 0.0,
+      "MinLocalCableAllocation": 0.0,
+      "IsAttachedToBuyline": false,
+      "LocalCableAllocationNumericType": 1,
+      "DayPartFlexibility": {
+        "ValuePercent": 10.0,
+        "DayPartIds": [ 5 ]
+      },
+      "Budgets": [
+        {
+          "Id": 4955,
+          "Year": 2020,
+          "Quarter": "q1",
+          "MarketId": 4370,
+          "HasMarketAttachedToDeal": false,
+          "AutoDistribute": false,
+          "CostTableId": null,
+          "DigitalAllocationMin": null,
+          "DigitalAllocationMax": null,
+          "SpotLengthWeeks": [
+            {
+              "SpotLengthId": 5,
+              "CPM": null,
+              "CPP": null,
+              "AlternateDemographicCosts": [
+                {
+                  "DemographicId": 1,
+                  "CPP": 1.0,
+                  "CPM": 1.0
+                }
+              ],
+              "Weeks": [
+                {
+                  "Week": "2019-12-30T00:00:00",
+                  "Value": 10.0,
+                  "DaysOfWeek": []
+                },
+                {
+                  "Week": "2020-01-06T00:00:00",
+                  "Value": 10.0,
+                  "DaysOfWeek": []
+                },
+                {
+                  "Week": "2020-01-13T00:00:00",
+                  "Value": 10.0,
+                  "DaysOfWeek": []
+                },
+                {
+                  "Week": "2020-01-20T00:00:00",
+                  "Value": 10.0,
+                  "DaysOfWeek": []
+                },
+                {
+                  "Week": "2020-01-27T00:00:00",
+                  "Value": 10.0,
+                  "DaysOfWeek": []
+                },
+                {
+                  "Week": "2020-02-03T00:00:00",
+                  "Value": 10.0,
+                  "DaysOfWeek": []
+                },
+                {
+                  "Week": "2020-02-10T00:00:00",
+                  "Value": 10.0,
+                  "DaysOfWeek": []
+                },
+                {
+                  "Week": "2020-02-17T00:00:00",
+                  "Value": 10.0,
+                  "DaysOfWeek": []
+                },
+                {
+                  "Week": "2020-02-24T00:00:00",
+                  "Value": 10.0,
+                  "DaysOfWeek": []
+                },
+                {
+                  "Week": "2020-03-02T00:00:00",
+                  "Value": 10.0,
+                  "DaysOfWeek": []
+                },
+                {
+                  "Week": "2020-03-09T00:00:00",
+                  "Value": 10.0,
+                  "DaysOfWeek": []
+                },
+                {
+                  "Week": "2020-03-16T00:00:00",
+                  "Value": 10.0,
+                  "DaysOfWeek": []
+                },
+                {
+                  "Week": "2020-03-23T00:00:00",
+                  "Value": 10.0,
+                  "DaysOfWeek": []
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "Rules": [
+        {
+          "Id": 800,
+          "Name": "Random Rule",
+          "DaysOfWeekIds": [ 1, 2 ],
+          "Min": 0.0,
+          "Max": 100.0,
+          "StartTime": "18:00:00",
+          "EndTime": "22:00:00",
+          "CategoryId": 0,
+          "Specificity": "All",
+          "View": "Imp",
+          "MarketIds": [ 4370 ],
+          "ProgramIds": [ 1 ],
+          "StationOrganizationIds": [ 797 ],
+          "DaypartId": null
+        }
+      ],
+      "ExcludedProgramIds": [ 1 ],
+      "TimezoneIds": [ 1 ],
+      "ExcludedStationOrganizationIds": [ 797 ],
+      "WeeklyFlexibility": null
+    }
+  ],
+  "Rules": [
+    {
+      "Id": 799,
+      "Name": "Random Rule",
+      "DaysOfWeekIds": [ 1, 2 ],
+      "Min": 0.0,
+      "Max": 100.0,
+      "StartTime": "18:00:00",
+      "EndTime": "22:00:00",
+      "CategoryId": 0,
+      "Specificity": "All",
+      "View": "Imp",
+      "MarketIds": [ 4370 ],
+      "ProgramIds": [ 1 ],
+      "StationOrganizationIds": [ 797 ],
+      "DaypartId": null
+    }
+  ],
+  "WeeklyFlexibility": null,
+  "IsAvailSent": false,
+  "ParentBuySpecificationId": 0,
+  "IsClone": false,
+  "IsOutOfDate": false,
+  "Id": 3450,
+  "PortfolioId": 5478,
+  "PortfolioName": "PortfolioName",
+  "Name": "BuySpec 7I2B637199837616186316",
+  "Code": "BuySpec7I2B637199837616186",
+  "AdvertiserOrganizationId": 1,
+  "BrandOrganizationId": 8,
+  "MediaTypeIds": [ 5 ],
+  "MarketTypeId": 1,
+  "DemographicValueTypeId": 2,
+  "GoalsMetricTypeId": 2,
+  "MarketsIds": [ 4370 ],
+  "ExcludedProgramIds": [ 1 ],
+  "ExcludedProgramCategoryIds": [],
+  "ExcludedStationOrganizationIds": [ 797 ],
+  "PrimaryDemographicId": 14,
+  "AlternateDemographicIds": [ 2, 1 ],
+  "ChangesetItemHash": "2bc2b899-4071-425c-9864-4dd415ee59de",
+  "RatingTypeId": 1,
+  "CreatedByName": null,
+  "ModifiedByName": null,
+  "DateCreatedUtc": "2020-03-16T19:29:22.180381",
+  "DateModifiedUtc": "2020-03-16T19:29:22.180381"
+}

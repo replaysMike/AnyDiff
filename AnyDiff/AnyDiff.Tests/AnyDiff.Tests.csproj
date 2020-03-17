@@ -33,4 +33,16 @@
     <ProjectReference Include="..\AnyDiff\AnyDiff.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Data\ComplexJson1.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\ComplexJson2-OutOfOrderDemoId.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\ComplexJson2.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
