@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace AnyDiff.Tests
 {
@@ -361,8 +362,8 @@ namespace AnyDiff.Tests
         {
             var provider = new DiffProvider();
 
-            var left = JsonConvert.DeserializeObject<ComplexDataSpec>(File.ReadAllText(@".\Data\ComplexJson1.json"));
-            var right = JsonConvert.DeserializeObject<ComplexDataSpec>(File.ReadAllText(@".\Data\ComplexJson2.json"));
+            var left = JsonConvert.DeserializeObject<ComplexDataSpec>(File.ReadAllText(GetFullPath(@"Data\ComplexJson1.json")));
+            var right = JsonConvert.DeserializeObject<ComplexDataSpec>(File.ReadAllText(GetFullPath(@"Data\ComplexJson2.json")));
 
             var options = ComparisonOptions.All | ComparisonOptions.AllowCollectionsToBeOutOfOrder | ComparisonOptions.AllowEqualsOverride;
 
@@ -387,8 +388,8 @@ namespace AnyDiff.Tests
         {
             var provider = new DiffProvider();
 
-            var left = JsonConvert.DeserializeObject<ComplexDataSpec>(File.ReadAllText(@".\Data\ComplexJson1.json"));
-            var right = JsonConvert.DeserializeObject<ComplexDataSpec>(File.ReadAllText(@".\Data\ComplexJson2-OutOfOrderDemoId.json"));
+            var left = JsonConvert.DeserializeObject<ComplexDataSpec>(File.ReadAllText(GetFullPath(@"Data\ComplexJson1.json")));
+            var right = JsonConvert.DeserializeObject<ComplexDataSpec>(File.ReadAllText(GetFullPath(@"Data\ComplexJson2-OutOfOrderDemoId.json")));
 
             var options = ComparisonOptions.All | ComparisonOptions.AllowEqualsOverride;
 
@@ -406,6 +407,86 @@ namespace AnyDiff.Tests
                 x => x.DayParts.Select(y => y.Code));
 
             Assert.AreEqual(2, diff.Count);
+        }
+
+        [Test]
+        public void ShouldDetect_ComplexJson_IncludeList()
+        {
+            var provider = new DiffProvider();
+
+            var left = JsonConvert.DeserializeObject<ComplexDataSpec>(File.ReadAllText(GetFullPath(@"Data\ComplexJson3.json")));
+            var right = JsonConvert.DeserializeObject<ComplexDataSpec>(File.ReadAllText(GetFullPath(@"Data\ComplexJson4.json")));
+
+            var options = ComparisonOptions.All | ComparisonOptions.IncludeList | ComparisonOptions.AllowEqualsOverride | ComparisonOptions.AllowCollectionsToBeOutOfOrder;
+
+            var diff = provider.ComputeDiff<ComplexDataSpec>(left, right, options,               
+                // only diff the following properties (inclusion)
+                x => x.PortfolioId,
+                x => x.Name,
+                x => x.Code,
+                x => x.AdvertiserOrganizationId,
+                x => x.BrandOrganizationId,
+                x => x.MarketTypeId,
+                x => x.MarketsIds,
+                x => x.ExcludedProgramIds,
+                x => x.ExcludedProgramCategoryIds,
+                x => x.ExcludedStationOrganizationIds,
+                x => x.PrimaryDemographicId,
+                x => x.IsSent,
+                x => x.ChangesetItemHash,
+                x => x.ParentBuySpecificationId,
+                x => x.IsClone,
+                x => x.IsOutOfDate,
+                x => x.TotalBrandBudget,
+                x => x.TotalGRP,
+                x => x.Budgets,
+                x => x.Rules,
+                x => x.AirtimeSeparationId,
+                x => x.MaxSharePerStation,
+                x => x.MinSharePerStation,
+                x => x.MaxPerWeek
+            );
+
+            Assert.AreEqual(0, diff.Count);
+
+            // perform the same comparison without AllowCollectionsToBeOutOfOrder
+            options = ComparisonOptions.All | ComparisonOptions.IncludeList | ComparisonOptions.AllowEqualsOverride;
+
+            diff = provider.ComputeDiff<ComplexDataSpec>(left, right, options,
+                // only diff the following properties (inclusion)
+                x => x.PortfolioId,
+                x => x.Name,
+                x => x.Code,
+                x => x.AdvertiserOrganizationId,
+                x => x.BrandOrganizationId,
+                x => x.MarketTypeId,
+                x => x.MarketsIds,
+                x => x.ExcludedProgramIds,
+                x => x.ExcludedProgramCategoryIds,
+                x => x.ExcludedStationOrganizationIds,
+                x => x.PrimaryDemographicId,
+                x => x.IsSent,
+                x => x.ChangesetItemHash,
+                x => x.ParentBuySpecificationId,
+                x => x.IsClone,
+                x => x.IsOutOfDate,
+                x => x.TotalBrandBudget,
+                x => x.TotalGRP,
+                x => x.Budgets,
+                x => x.Rules,
+                x => x.AirtimeSeparationId,
+                x => x.MaxSharePerStation,
+                x => x.MinSharePerStation,
+                x => x.MaxPerWeek
+            );
+
+            Assert.AreEqual(0, diff.Count);
+        }
+
+        private string GetFullPath(string filename)
+        {
+            var path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), filename);
+            return path;
         }
     }
 }

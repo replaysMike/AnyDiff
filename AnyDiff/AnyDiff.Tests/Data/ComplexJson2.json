@@ -182,7 +182,7 @@
     }
   ],
   "WeeklyFlexibility": null,
-  "IsAvailSent": false,
+  "IsSent": false,
   "ParentBuySpecificationId": 0,
   "IsClone": false,
   "IsOutOfDate": false,

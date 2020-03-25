@@ -14,14 +14,14 @@
   "MaxLocalCableAllocation": 0.0,
   "MinLocalCableAllocation": 0.0,
   "DistributorOrganizationId": 0,
-  "HasDealAttached": false,
+  "HasDealAttached": true,
   "LocalCableAllocationNumericType": 1,
   "DayParts": [
     {
       "Id": 5,
-      "BuySpecificationDayPartId": 0,
-      "Name": "Prime Time",
-      "Code": "PR",
+      "BuySpecificationDayPartId": 55,
+      "Name": null,
+      "Code": null,
       "WeekdayStartTime": "06:00:00",
       "WeekdayEndTime": "18:00:00",
       "SaturdayStartTime": "06:00:00",
@@ -39,19 +39,20 @@
       "MaxSpotLimitPerWeekOther30m1h": null,
       "MaxLocalCableAllocation": 0.0,
       "MinLocalCableAllocation": 0.0,
-      "IsAttachedToBuyline": false,
+      "IsAttachedToBuyline": true,
       "LocalCableAllocationNumericType": 1,
       "DayPartFlexibility": {
-        "ValuePercent": 10.0,
-        "DayPartIds": [ 5 ]
+        "ValuePercent": 0.0,
+        "DayPartIds": [
+        ]
       },
       "Budgets": [
         {
-          "Id": 0,
+          "Id": 55,
           "Year": 2020,
           "Quarter": "q1",
           "MarketId": 4370,
-          "HasMarketAttachedToDeal": false,
+          "HasMarketAttachedToDeal": true,
           "AutoDistribute": false,
           "CostTableId": null,
           "DigitalAllocationMin": null,
@@ -62,77 +63,85 @@
               "CPM": null,
               "CPP": null,
               "AlternateDemographicCosts": [
-                {
-                  "DemographicId": 1,
-                  "CPP": 1.0,
-                  "CPM": 1.0
-                }
               ],
               "Weeks": [
                 {
-                  "Week": "2019-12-30T00:00:00",
+                  "Week": "2019-12-30T00:00:00Z",
                   "Value": 10.0,
-                  "DaysOfWeek": []
+                  "DaysOfWeek": [
+                  ]
                 },
                 {
-                  "Week": "2020-01-06T00:00:00",
+                  "Week": "2020-01-06T00:00:00Z",
                   "Value": 10.0,
-                  "DaysOfWeek": []
+                  "DaysOfWeek": [
+                  ]
                 },
                 {
-                  "Week": "2020-01-13T00:00:00",
+                  "Week": "2020-01-13T00:00:00Z",
                   "Value": 10.0,
-                  "DaysOfWeek": []
+                  "DaysOfWeek": [
+                  ]
                 },
                 {
-                  "Week": "2020-01-20T00:00:00",
+                  "Week": "2020-01-20T00:00:00Z",
                   "Value": 10.0,
-                  "DaysOfWeek": []
+                  "DaysOfWeek": [
+                  ]
                 },
                 {
-                  "Week": "2020-01-27T00:00:00",
+                  "Week": "2020-01-27T00:00:00Z",
                   "Value": 10.0,
-                  "DaysOfWeek": []
+                  "DaysOfWeek": [
+                  ]
                 },
                 {
-                  "Week": "2020-02-03T00:00:00",
+                  "Week": "2020-02-03T00:00:00Z",
                   "Value": 10.0,
-                  "DaysOfWeek": []
+                  "DaysOfWeek": [
+                  ]
                 },
                 {
-                  "Week": "2020-02-10T00:00:00",
+                  "Week": "2020-02-10T00:00:00Z",
                   "Value": 10.0,
-                  "DaysOfWeek": []
+                  "DaysOfWeek": [
+                  ]
                 },
                 {
-                  "Week": "2020-02-17T00:00:00",
+                  "Week": "2020-02-17T00:00:00Z",
                   "Value": 10.0,
-                  "DaysOfWeek": []
+                  "DaysOfWeek": [
+                  ]
                 },
                 {
-                  "Week": "2020-02-24T00:00:00",
+                  "Week": "2020-02-24T00:00:00Z",
                   "Value": 10.0,
-                  "DaysOfWeek": []
+                  "DaysOfWeek": [
+                  ]
                 },
                 {
-                  "Week": "2020-03-02T00:00:00",
+                  "Week": "2020-03-02T00:00:00Z",
                   "Value": 10.0,
-                  "DaysOfWeek": []
+                  "DaysOfWeek": [
+                  ]
                 },
                 {
-                  "Week": "2020-03-09T00:00:00",
+                  "Week": "2020-03-09T00:00:00Z",
                   "Value": 10.0,
-                  "DaysOfWeek": []
+                  "DaysOfWeek": [
+                  ]
                 },
                 {
-                  "Week": "2020-03-16T00:00:00",
+                  "Week": "2020-03-16T00:00:00Z",
                   "Value": 10.0,
-                  "DaysOfWeek": []
+                  "DaysOfWeek": [
+                  ]
                 },
                 {
-                  "Week": "2020-03-23T00:00:00",
+                  "Week": "2020-03-23T00:00:00Z",
                   "Value": 10.0,
-                  "DaysOfWeek": []
+                  "DaysOfWeek": [
+                  ]
                 }
               ]
             }
@@ -140,73 +149,76 @@
         }
       ],
       "Rules": [
-        {
-          "Id": 0,
-          "Name": "Random Rule",
-          "DaysOfWeekIds": [ 1, 2 ],
-          "Min": 0.0,
-          "Max": 100.0,
-          "StartTime": "18:00:00",
-          "EndTime": "22:00:00",
-          "CategoryId": 0,
-          "Specificity": "All",
-          "View": "Imp",
-          "MarketIds": [ 4370 ],
-          "ProgramIds": [ 1 ],
-          "StationOrganizationIds": [ 797 ],
-          "DaypartId": null
-        }
       ],
-      "ExcludedProgramIds": [ 1 ],
-      "TimezoneIds": [ 1 ],
-      "ExcludedStationOrganizationIds": [ 797 ],
+      "ExcludedProgramIds": [
+      ],
+      "TimezoneIds": [
+      ],
+      "ExcludedStationOrganizationIds": [
+      ],
       "WeeklyFlexibility": null
     }
   ],
   "Rules": [
-    {
-      "Id": 0,
-      "Name": "Random Rule",
-      "DaysOfWeekIds": [ 1, 2 ],
-      "Min": 0.0,
-      "Max": 100.0,
-      "StartTime": "18:00:00",
-      "EndTime": "22:00:00",
-      "CategoryId": 0,
-      "Specificity": "All",
-      "View": "Imp",
-      "MarketIds": [ 4370 ],
-      "ProgramIds": [ 1 ],
-      "StationOrganizationIds": [ 797 ],
-      "DaypartId": null
-    }
   ],
   "WeeklyFlexibility": null,
   "IsSent": false,
   "ParentBuySpecificationId": 0,
   "IsClone": false,
   "IsOutOfDate": false,
-  "Id": 0,
-  "PortfolioId": 5478,
-  "PortfolioName": "PortfolioName",
-  "Name": "BuySpec 7I2B637199837616186316",
-  "Code": "BuySpec7I2B637199837616186",
+  "Id": 28,
+  "PortfolioId": 77,
+  "PortfolioName": "Portfolio 637205872887921582",
+  "Name": "BuySpec PEPS637205872898692793",
+  "Code": "BuySpecPEPS637205872898692",
   "AdvertiserOrganizationId": 1,
   "BrandOrganizationId": 8,
-  "MediaTypeIds": [ 5 ],
+  "MediaTypeIds": [
+    5
+  ],
   "MarketTypeId": 1,
   "DemographicValueTypeId": 2,
   "GoalsMetricTypeId": 2,
-  "MarketsIds": [ 4370 ],
-  "ExcludedProgramIds": [ 1 ],
-  "ExcludedProgramCategoryIds": [],
-  "ExcludedStationOrganizationIds": [ 797 ],
+  "MarketsIds": [
+    4370
+  ],
+  "ExcludedProgramIds": [
+  ],
+  "ExcludedProgramCategoryIds": [
+  ],
+  "ExcludedStationOrganizationIds": [
+    7694,
+    7620,
+    7619,
+    7618,
+    7617,
+    7616,
+    7615,
+    7614,
+    7590,
+    7490,
+    2862,
+    2840,
+    2817,
+    2471,
+    2365,
+    1281,
+    1276,
+    959,
+    772,
+    748,
+    476,
+    423,
+    176
+  ],
   "PrimaryDemographicId": 14,
-  "AlternateDemographicIds": [ 1, 2 ],
-  "ChangesetItemHash": "00000000-0000-0000-0000-000000000000",
+  "AlternateDemographicIds": [
+    13
+  ],
+  "ChangesetItemHash": "bd6241a8-68d9-4929-92d3-601ea222cb30",
   "RatingTypeId": 1,
-  "CreatedByName": null,
-  "ModifiedByName": null,
-  "DateCreatedUtc": "0001-01-01T00:00:00",
-  "DateModifiedUtc": "0001-01-01T00:00:00"
+  "CreatedByName": "DSP-Buyer-1 ITN",
+  "ModifiedByName": "DSP-Buyer-1 ITN",
+  "DateCreatedUtc": "2020-03-23T19:08:10.192414Z",
+  "DateModifiedUtc": "2020-03-23T19:10:22.739083Z"
 }
