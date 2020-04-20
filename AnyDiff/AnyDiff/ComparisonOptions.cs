@@ -29,7 +29,8 @@ namespace AnyDiff
         /// </summary>
         AllowCompareDifferentObjects = 16,
         /// <summary>
-        /// Specify if you want to allow comparing of lists/arrays that don't have the same order
+        /// Specify if you want to allow comparing of lists/arrays that don't have the same order.
+        /// You should also use <seealso cref="AllowEqualsOverride"/> when using this option as this is usually required to function.
         /// </summary>
         AllowCollectionsToBeOutOfOrder = 32,
         /// <summary>
