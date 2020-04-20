@@ -1,7 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net40;net45;net46;net461;net462;net47</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net40;net45;net46;net461;net462;net47;net48</TargetFrameworks>
+    <Product>AnyDiff</Product>
+    <ProductName>AnyDiff</ProductName>
     <Authors>Michael Brown</Authors>
     <Company>Refactor Software</Company>
     <Description>A CSharp library that allows you to diff two objects and get a list of the differences back.</Description>
@@ -9,23 +11,46 @@
     <PackageProjectUrl>https://github.com/replaysMike/AnyDiff</PackageProjectUrl>
     <PackageTags>diff compare objects difference difference-generator dotnet-standard refactor software michael brown</PackageTags>
     <PackageReleaseNotes>A CSharp library that allows you to diff two objects and get a list of the differences back.</PackageReleaseNotes>
-    <Version>1.0.8</Version>
+    <Version>1.0.0</Version>
+    <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)'=='netstandard2.0' OR '$(TargetFramework)'=='net45' OR '$(TargetFramework)'=='net46' OR '$(TargetFramework)'=='net461' OR '$(TargetFramework)'=='net462'">
     <DefineConstants>FEATURE_CUSTOM_ATTRIBUTES;FEATURE_CUSTOM_TYPEINFO;FEATURE_GETMETHOD;FEATURE_SETVALUE;FEATURE_TASK;FEATURE_ASSEMBLYBUILDER</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TargetFramework)'=='netstandard2.0' OR '$(TargetFramework)'=='net47'">
+  <PropertyGroup Condition="'$(TargetFramework)'=='netstandard2.0' OR '$(TargetFramework)'=='net47' OR '$(TargetFramework)'=='net48'">
     <DefineConstants>FEATURE_CUSTOM_VALUETUPLE;FEATURE_CUSTOM_ATTRIBUTES;FEATURE_CUSTOM_TYPEINFO;FEATURE_GETMETHOD;FEATURE_SETVALUE;FEATURE_TASK;FEATURE_ASSEMBLYBUILDER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="DiffProvider.cs~RF214c365d.TMP" />
+    <PackageReference Include="ILRepack.MSBuild.Task" Version="2.0.13" PrivateAssets="all" />
+    <PackageReference Include="TypeSupport" Version="1.0.108" PrivateAssets="all" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="TypeSupport" Version="1.0.90" />
-  </ItemGroup>
+  <Target Name="ILRepack" AfterTargets="Build" Condition="'$(Configuration)' == 'Release' AND '$(TargetFramework)' != ''">
+    <PropertyGroup>
+      <WorkingDirectory>$(OutputPath)</WorkingDirectory>
+    </PropertyGroup>
+    <ItemGroup>
+      <!-- These are all the assemblies you want to embed -->
+      <InputAssemblies Include="TypeSupport.dll" />
+    </ItemGroup>
+    <ItemGroup>
+      <!-- Dot not internalize any types inside this assembly -->
+    </ItemGroup>
+    <Message Text="MERGING: $(TargetFramework) @(InputAssemblies->'%(Filename)') into $(OutputAssembly)" Importance="High" />
+    <ILRepack
+      Parallel="true"
+      AllowDuplicateResources="false"
+      DebugInfo="true"
+      OutputType="$(OutputType)"
+      MainAssembly="$(AssemblyName).dll"
+      OutputAssembly="$(AssemblyName).dll"
+      InputAssemblies="@(InputAssemblies)"
+      InternalizeExcludeAssemblies="@(InternalizeExcludeAssemblies)"
+      WorkingDirectory="$(WorkingDirectory)" />
+  </Target>
 
 </Project>

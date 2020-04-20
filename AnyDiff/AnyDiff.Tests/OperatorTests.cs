@@ -1,7 +1,5 @@
-﻿using AnyDiff.Extensions;
-using AnyDiff.Tests.TestObjects;
+﻿using AnyDiff.Tests.TestObjects;
 using NUnit.Framework;
-using TypeSupport;
 
 namespace AnyDiff.Tests
 {
@@ -15,9 +13,6 @@ namespace AnyDiff.Tests
         public void OneTimeSetup()
         {
             _provider = new DiffProvider();
-            // todo: we are going to disable TypeSupport caching for these tests, for some reason there's an issue.
-            // DiffProvider.DefaultTypeSupportOptions = TypeSupportOptions.Collections | TypeSupportOptions.Attributes | TypeSupportOptions.Caching | TypeSupportOptions.Methods;
-            DiffProvider.DefaultTypeSupportOptions = TypeSupportOptions.Collections | TypeSupportOptions.Attributes | TypeSupportOptions.Methods;
         }
 
         [Test]

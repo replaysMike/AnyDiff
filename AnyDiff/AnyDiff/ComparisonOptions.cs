@@ -37,11 +37,11 @@ namespace AnyDiff
         /// </summary>
         AllowEqualsOverride = 64,
         /// <summary>
-        /// Specify the property list passed is an include list
+        /// Specify the propertiesToExcludeOrInclude collection should be treated as a list of property names or paths to only examine in the Diff, all other properties will be ignored
         /// </summary>
         IncludeList = 128,
         /// <summary>
-        /// Specify the property list passed is an exclude list (default)
+        /// Specify the propertiesToExcludeOrInclude collection should be treated as a list of property names or paths to ignore in the Diff (default)
         /// </summary>
         ExcludeList = 256,
         /// <summary>
@@ -55,6 +55,6 @@ namespace AnyDiff
         /// <summary>
         /// Compare all objects
         /// </summary>
-        All = CompareProperties | CompareFields | CompareCollections,
+        All = CompareProperties | CompareFields | CompareCollections | ExcludeList,
     }
 }

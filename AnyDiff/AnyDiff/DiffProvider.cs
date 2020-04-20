@@ -53,11 +53,11 @@ namespace AnyDiff
         /// <param name="left">Object A</param>
         /// <param name="right">Object B</param>
         /// <param name="comparisonOptions">Specify the comparison options</param>
-        /// <param name="propertyList">A list of property names or full path names to ignore</param>
+        /// <param name="propertiesToExcludeOrInclude">A list of property names or full path names to include/exclude. Default is <seealso cref="ComparisonOptions.ExcludeList"/>. Specify <seealso cref="ComparisonOptions.ExcludeList"/> to exclude the specified properties from the Diff or <seealso cref="ComparisonOptions.IncludeList"/> to only Diff properties contained in the list.</param>
         /// <returns></returns>
-        public List<Difference> ComputeDiff(object left, object right, ComparisonOptions comparisonOptions, params string[] propertyList)
+        public List<Difference> ComputeDiff(object left, object right, ComparisonOptions comparisonOptions, params string[] propertiesToExcludeOrInclude)
         {
-            return ComputeDiff(left, right, DefaultMaxDepth, comparisonOptions, propertyList);
+            return ComputeDiff(left, right, DefaultMaxDepth, comparisonOptions, propertiesToExcludeOrInclude);
         }
 
         /// <summary>
@@ -80,11 +80,11 @@ namespace AnyDiff
         /// <param name="right"></param>
         /// <param name="comparisonOptions">Specify the comparison options</param>
         /// <param name="diffOptions">Specify custom diff options</param>
-        /// <param name="propertyList"></param>
+        /// <param name="propertiesToExcludeOrInclude"></param>
         /// <returns></returns>
-        public List<Difference> ComputeDiff<T>(T left, T right, ComparisonOptions comparisonOptions, DiffOptions diffOptions, params Expression<Func<T, object>>[] propertyList)
+        public List<Difference> ComputeDiff<T>(T left, T right, ComparisonOptions comparisonOptions, DiffOptions diffOptions, params Expression<Func<T, object>>[] propertiesToExcludeOrInclude)
         {
-            return ComputeDiff(left, right, DefaultMaxDepth, comparisonOptions, diffOptions, propertyList);
+            return ComputeDiff(left, right, DefaultMaxDepth, comparisonOptions, diffOptions, propertiesToExcludeOrInclude);
         }
 
         /// <summary>
@@ -94,11 +94,11 @@ namespace AnyDiff
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <param name="comparisonOptions">Specify the comparison options</param>
-        /// <param name="propertyList"></param>
+        /// <param name="propertiesToExcludeOrInclude"></param>
         /// <returns></returns>
-        public List<Difference> ComputeDiff<T>(T left, T right, ComparisonOptions comparisonOptions, params Expression<Func<T, object>>[] propertyList)
+        public List<Difference> ComputeDiff<T>(T left, T right, ComparisonOptions comparisonOptions, params Expression<Func<T, object>>[] propertiesToExcludeOrInclude)
         {
-            return ComputeDiff(left, right, DefaultMaxDepth, comparisonOptions, propertyList);
+            return ComputeDiff(left, right, DefaultMaxDepth, comparisonOptions, propertiesToExcludeOrInclude);
         }
 
         /// <summary>
@@ -109,11 +109,11 @@ namespace AnyDiff
         /// <param name="maxDepth"></param>
         /// <param name="comparisonOptions">Specify the comparison options</param>
         /// <param name="diffOptions">Specify custom diff options</param>
-        /// <param name="propertyList">A list of property names or full path names to ignore</param>
+        /// <param name="propertiesToExcludeOrInclude">A list of property names or full path names to include/exclude. Default is <seealso cref="ComparisonOptions.ExcludeList"/>. Specify <seealso cref="ComparisonOptions.ExcludeList"/> to exclude the specified properties from the Diff or <seealso cref="ComparisonOptions.IncludeList"/> to only Diff properties contained in the list.</param>
         /// <returns></returns>
-        public List<Difference> ComputeDiff(object left, object right, int maxDepth, ComparisonOptions comparisonOptions, DiffOptions diffOptions, params string[] propertyList)
+        public List<Difference> ComputeDiff(object left, object right, int maxDepth, ComparisonOptions comparisonOptions, DiffOptions diffOptions, params string[] propertiesToExcludeOrInclude)
         {
-            return RecurseProperties(left, right, null, new List<Difference>(), 0, maxDepth, new ObjectHashcodeMap(), string.Empty, comparisonOptions, propertyList, diffOptions);
+            return RecurseProperties(left, right, null, new List<Difference>(), 0, maxDepth, new ObjectHashcodeMap(), string.Empty, comparisonOptions, propertiesToExcludeOrInclude, diffOptions);
         }
 
         /// <summary>
@@ -123,11 +123,11 @@ namespace AnyDiff
         /// <param name="right"></param>
         /// <param name="maxDepth"></param>
         /// <param name="comparisonOptions">Specify the comparison options</param>
-        /// <param name="propertyList">A list of property names or full path names to ignore</param>
+        /// <param name="propertiesToExcludeOrInclude">A list of property names or full path names to include/exclude. Default is <seealso cref="ComparisonOptions.ExcludeList"/>. Specify <seealso cref="ComparisonOptions.ExcludeList"/> to exclude the specified properties from the Diff or <seealso cref="ComparisonOptions.IncludeList"/> to only Diff properties contained in the list.</param>
         /// <returns></returns>
-        public List<Difference> ComputeDiff(object left, object right, int maxDepth, ComparisonOptions comparisonOptions, params string[] propertyList)
+        public List<Difference> ComputeDiff(object left, object right, int maxDepth, ComparisonOptions comparisonOptions, params string[] propertiesToExcludeOrInclude)
         {
-            return RecurseProperties(left, right, null, new List<Difference>(), 0, maxDepth, new ObjectHashcodeMap(), string.Empty, comparisonOptions, propertyList, DiffOptions.Default);
+            return RecurseProperties(left, right, null, new List<Difference>(), 0, maxDepth, new ObjectHashcodeMap(), string.Empty, comparisonOptions, propertiesToExcludeOrInclude, DiffOptions.Default);
         }
 
         /// <summary>
@@ -139,15 +139,15 @@ namespace AnyDiff
         /// <param name="maxDepth">Maximum recursion depth</param>
         /// <param name="comparisonOptions">Specify the comparison options</param>
         /// <param name="diffOptions">Specify custom diff options</param>
-        /// <param name="propertyList">A list of property names or full path names to ignore</param>
+        /// <param name="propertiesToExcludeOrInclude">A list of property names or full path names to include/exclude. Default is <seealso cref="ComparisonOptions.ExcludeList"/>. Specify <seealso cref="ComparisonOptions.ExcludeList"/> to exclude the specified properties from the Diff or <seealso cref="ComparisonOptions.IncludeList"/> to only Diff properties contained in the list.</param>
         /// <returns></returns>
-        public List<Difference> ComputeDiff<T>(T left, T right, int maxDepth, ComparisonOptions comparisonOptions, DiffOptions diffOptions, params Expression<Func<T, object>>[] propertyList)
+        public List<Difference> ComputeDiff<T>(T left, T right, int maxDepth, ComparisonOptions comparisonOptions, DiffOptions diffOptions, params Expression<Func<T, object>>[] propertiesToExcludeOrInclude)
         {
             var ignorePropertiesList = new List<string>();
             var expressionManager = new ExpressionManager();
-            if (propertyList != null)
+            if (propertiesToExcludeOrInclude != null)
             {
-                foreach (var expression in propertyList)
+                foreach (var expression in propertiesToExcludeOrInclude)
                 {
                     var name = expressionManager.GetPropertyPath(expression.Body);
                     ignorePropertiesList.Add(name);
@@ -165,9 +165,9 @@ namespace AnyDiff
         /// <param name="maxDepth">Maximum recursion depth</param>
         /// <param name="options">Specify the comparison options</param>
         /// <returns></returns>
-        public List<Difference> ComputeDiff<T>(T left, T right, int maxDepth, ComparisonOptions options, params Expression<Func<T, object>>[] propertyList)
+        public List<Difference> ComputeDiff<T>(T left, T right, int maxDepth, ComparisonOptions options, params Expression<Func<T, object>>[] propertiesToExcludeOrInclude)
         {
-            return ComputeDiff<T>(left, right, maxDepth, options, DiffOptions.Default, propertyList);
+            return ComputeDiff<T>(left, right, maxDepth, options, DiffOptions.Default, propertiesToExcludeOrInclude);
         }
 
         /// <summary>
@@ -182,12 +182,12 @@ namespace AnyDiff
         /// <param name="objectTree">A hash table containing the tree that has already been traversed, to prevent recursion loops</param>
         /// <param name="comparisonOptions">Specify the comparison options</param>
         /// <param name="diffOptions">Specify custom diff options</param>
-        /// <param name="propertyList">A list of property names or full path names to ignore</param>
+        /// <param name="propertiesToExcludeOrInclude">A list of property names or full path names to include/exclude. Default is <seealso cref="ComparisonOptions.ExcludeList"/>. Specify <seealso cref="ComparisonOptions.ExcludeList"/> to exclude the specified properties from the Diff or <seealso cref="ComparisonOptions.IncludeList"/> to only Diff properties contained in the list.</param>
         /// <param name="path">The current path</param>
         /// <returns></returns>
-        private List<Difference> RecurseProperties(object left, object right, object parent, List<Difference> differences, int currentDepth, int maxDepth, ObjectHashcodeMap objectTree, string path, ComparisonOptions comparisonOptions, ICollection<string> propertyList, DiffOptions diffOptions)
+        private List<Difference> RecurseProperties(object left, object right, object parent, List<Difference> differences, int currentDepth, int maxDepth, ObjectHashcodeMap objectTree, string path, ComparisonOptions comparisonOptions, ICollection<string> propertiesToExcludeOrInclude, DiffOptions diffOptions)
         {
-            if (GetPropertyInclusionState(null, path, comparisonOptions, propertyList, null, diffOptions.AttributeIgnoreList) == FilterResult.Exclude)
+            if (GetPropertyInclusionState(null, path, comparisonOptions, propertiesToExcludeOrInclude, null, diffOptions.AttributeIgnoreList) == FilterResult.Exclude)
                 return differences;
 
             if (!comparisonOptions.BitwiseHasFlag(ComparisonOptions.AllowCompareDifferentObjects)
@@ -245,7 +245,7 @@ namespace AnyDiff
             foreach (var property in properties)
             {
                 localPath = $"{rootPath}.{property.Name}";
-                if (GetPropertyInclusionState(property.Name, localPath, comparisonOptions, propertyList, property.CustomAttributes, diffOptions.AttributeIgnoreList) == FilterResult.Exclude)
+                if (GetPropertyInclusionState(property.Name, localPath, comparisonOptions, propertiesToExcludeOrInclude, property.CustomAttributes, diffOptions.AttributeIgnoreList) == FilterResult.Exclude)
                     continue;
                 object leftValue = null;
                 try
@@ -267,12 +267,12 @@ namespace AnyDiff
                 {
                     // catch any exceptions accessing the property
                 }
-                differences = GetDifferences(property.Name, property.Type, GetTypeConverter(property), leftValue, rightValue, parent, differences, currentDepth, maxDepth, objectTree, localPath, comparisonOptions, propertyList, diffOptions);
+                differences = GetDifferences(property.Name, property.Type, GetTypeConverter(property), leftValue, rightValue, parent, differences, currentDepth, maxDepth, objectTree, localPath, comparisonOptions, propertiesToExcludeOrInclude, diffOptions);
             }
             foreach (var field in fields)
             {
                 localPath = $"{rootPath}.{field.Name}";
-                if (GetPropertyInclusionState(field.Name, localPath, comparisonOptions, propertyList, field.CustomAttributes, diffOptions.AttributeIgnoreList) == FilterResult.Exclude)
+                if (GetPropertyInclusionState(field.Name, localPath, comparisonOptions, propertiesToExcludeOrInclude, field.CustomAttributes, diffOptions.AttributeIgnoreList) == FilterResult.Exclude)
                     continue;
                 object leftValue = null;
                 if (left != null)
@@ -280,7 +280,7 @@ namespace AnyDiff
                 object rightValue = null;
                 if (right != null)
                     rightValue = right.GetFieldValue(field);
-                differences = GetDifferences(field.Name, field.Type, GetTypeConverter(field), leftValue, rightValue, parent, differences, currentDepth, maxDepth, objectTree, localPath, comparisonOptions, propertyList, diffOptions);
+                differences = GetDifferences(field.Name, field.Type, GetTypeConverter(field), leftValue, rightValue, parent, differences, currentDepth, maxDepth, objectTree, localPath, comparisonOptions, propertiesToExcludeOrInclude, diffOptions);
             }
 
             return differences;
@@ -301,12 +301,12 @@ namespace AnyDiff
         /// <param name="objectTree">A hash table containing the tree that has already been traversed, to prevent recursion loops</param>
         /// <param name="path">The current path</param>
         /// <param name="options">Specify the comparison options</param>
-        /// <param name="propertyList">A list of property names or full path names to ignore</param>
+        /// <param name="propertiesToExcludeOrInclude">A list of property names or full path names to include/exclude. Default is <seealso cref="ComparisonOptions.ExcludeList"/>. Specify <seealso cref="ComparisonOptions.ExcludeList"/> to exclude the specified properties from the Diff or <seealso cref="ComparisonOptions.IncludeList"/> to only Diff properties contained in the list.</param>
         /// <param name="diffOptions">Specify custom diff options</param>
         /// <returns></returns>
-        private List<Difference> GetDifferences(string propertyName, Type propertyType, TypeConverter typeConverter, object left, object right, object parent, List<Difference> differences, int currentDepth, int maxDepth, ObjectHashcodeMap objectTree, string path, ComparisonOptions options, ICollection<string> propertyList, DiffOptions diffOptions)
+        private List<Difference> GetDifferences(string propertyName, Type propertyType, TypeConverter typeConverter, object left, object right, object parent, List<Difference> differences, int currentDepth, int maxDepth, ObjectHashcodeMap objectTree, string path, ComparisonOptions options, ICollection<string> propertiesToExcludeOrInclude, DiffOptions diffOptions)
         {
-            if (GetPropertyInclusionState(propertyName, path, options, propertyList, null, diffOptions.AttributeIgnoreList) == FilterResult.Exclude)
+            if (GetPropertyInclusionState(propertyName, path, options, propertiesToExcludeOrInclude, null, diffOptions.AttributeIgnoreList) == FilterResult.Exclude)
                 return differences;
 
             var propertyTypeSupport = propertyType.GetExtendedType(DefaultTypeSupportOptions);
@@ -397,7 +397,7 @@ namespace AnyDiff
                             // check array element for difference
                             if (leftValue != null && !leftValue.GetType().IsValueType && leftValue.GetType() != typeof(string))
                             {
-                                var itemDifferences = RecurseProperties(leftValue, rightValue, parent, new List<Difference>(), currentDepth, maxDepth, childObjectTree, path, options, propertyList, diffOptions);
+                                var itemDifferences = RecurseProperties(leftValue, rightValue, parent, new List<Difference>(), currentDepth, maxDepth, childObjectTree, path, options, propertiesToExcludeOrInclude, diffOptions);
                                 if (itemDifferences.Any() && options.BitwiseHasFlag(ComparisonOptions.AllowCollectionsToBeOutOfOrder))
                                     continue;
                                 else if (itemDifferences.Any())
@@ -423,7 +423,7 @@ namespace AnyDiff
                                 if (leftKvpKey != null && !leftKvpKeyType.IsValueType && leftKvpKeyType != typeof(string))
                                 {
 
-                                    var itemDifferences = RecurseProperties(leftKvpKey, rightKvpKey, leftValue, new List<Difference>(), currentDepth, maxDepth, childObjectTree, path, options, propertyList, diffOptions);
+                                    var itemDifferences = RecurseProperties(leftKvpKey, rightKvpKey, leftValue, new List<Difference>(), currentDepth, maxDepth, childObjectTree, path, options, propertiesToExcludeOrInclude, diffOptions);
                                     if (itemDifferences.Any() && options.BitwiseHasFlag(ComparisonOptions.AllowCollectionsToBeOutOfOrder))
                                         continue;
                                     else if (itemDifferences.Any())
@@ -451,7 +451,7 @@ namespace AnyDiff
                                 // compare the value
                                 if (leftKvpValue != null && !leftKvpValueType.IsValueType && leftKvpValueType != typeof(string))
                                 {
-                                    var itemDifferences = RecurseProperties(leftKvpValue, rightKvpValue, leftValue, new List<Difference>(), currentDepth, maxDepth, childObjectTree, path, options, propertyList, diffOptions);
+                                    var itemDifferences = RecurseProperties(leftKvpValue, rightKvpValue, leftValue, new List<Difference>(), currentDepth, maxDepth, childObjectTree, path, options, propertiesToExcludeOrInclude, diffOptions);
                                     if (itemDifferences.Any() && options.BitwiseHasFlag(ComparisonOptions.AllowCollectionsToBeOutOfOrder))
                                         continue;
                                     else if (itemDifferences.Any())
@@ -536,7 +536,7 @@ namespace AnyDiff
             }
             else if (!leftValueType.IsValueType && leftValueType != typeof(string))
             {
-                differences = RecurseProperties(leftValue, rightValue, leftValue, differences, currentDepth, maxDepth, objectTree, path, options, propertyList, diffOptions);
+                differences = RecurseProperties(leftValue, rightValue, leftValue, differences, currentDepth, maxDepth, objectTree, path, options, propertiesToExcludeOrInclude, diffOptions);
             }
             else
             {
@@ -654,21 +654,21 @@ namespace AnyDiff
         /// <param name="name">Property or field name</param>
         /// <param name="path">Full path to object</param>
         /// <param name="options">Comparison options</param>
-        /// <param name="propertyList">List of names or paths to process for inclusion or exclusion</param>
+        /// <param name="propertiesToExcludeOrInclude">A list of property names or full path names to include/exclude. Default is <seealso cref="ComparisonOptions.ExcludeList"/>. Specify <seealso cref="ComparisonOptions.ExcludeList"/> to exclude the specified properties from the Diff or <seealso cref="ComparisonOptions.IncludeList"/> to only Diff properties contained in the list.</param>
         /// <returns></returns>
-        private FilterResult GetPropertyInclusionState(string name, string path, ComparisonOptions options, ICollection<string> propertyList, IEnumerable<CustomAttributeData> attributes, ICollection<object> attributeIgnoreList)
+        private FilterResult GetPropertyInclusionState(string name, string path, ComparisonOptions options, ICollection<string> propertiesToExcludeOrInclude, IEnumerable<CustomAttributeData> attributes, ICollection<object> attributeIgnoreList)
         {
             var isIncludeList = options.BitwiseHasFlag(ComparisonOptions.IncludeList);
             var isExcludeList = !isIncludeList || options.BitwiseHasFlag(ComparisonOptions.ExcludeList);
 
-            var excludeByNameOrPath = isExcludeList && (propertyList?.Contains(name) == true || propertyList?.Contains(path) == true);
+            var excludeByNameOrPath = isExcludeList && (propertiesToExcludeOrInclude?.Contains(name) == true || propertiesToExcludeOrInclude?.Contains(path) == true);
             if (excludeByNameOrPath)
                 return FilterResult.Exclude; // exclude the property (by being in the exclusion list)
 
             if (isIncludeList)
             {
                 var noInheritance = options.BitwiseHasFlag(ComparisonOptions.IncludeListNoInheritance);
-                var includeByNameOrPath = (propertyList?.Contains(name) == true || propertyList?.Contains(path) == true);
+                var includeByNameOrPath = (propertiesToExcludeOrInclude?.Contains(name) == true || propertiesToExcludeOrInclude?.Contains(path) == true);
                 if (!includeByNameOrPath && !noInheritance)
                 {
                     // for inclusion lists, if the parent path is allowed then allow its children
@@ -676,7 +676,7 @@ namespace AnyDiff
                     var parentPaths = pathParts.Skip(1).Take(pathParts.Length - 2).Select(x => $".{x}").ToList();
                     foreach (var parentPath in parentPaths)
                     {
-                        includeByNameOrPath = propertyList.Contains(parentPath);
+                        includeByNameOrPath = propertiesToExcludeOrInclude.Contains(parentPath);
                         if (includeByNameOrPath)
                             break;
                     }
@@ -728,6 +728,9 @@ namespace AnyDiff
             return isMatch;
         }
 
+        /// <summary>
+        /// The type of filter to use when determining if a property should be ignored or included
+        /// </summary>
         private enum FilterResult
         {
             Exclude,
