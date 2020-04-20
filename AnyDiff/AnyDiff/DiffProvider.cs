@@ -659,7 +659,8 @@ namespace AnyDiff
         private FilterResult GetPropertyInclusionState(string name, string path, ComparisonOptions options, ICollection<string> propertiesToExcludeOrInclude, IEnumerable<CustomAttributeData> attributes, ICollection<object> attributeIgnoreList)
         {
             var isIncludeList = options.BitwiseHasFlag(ComparisonOptions.IncludeList);
-            var isExcludeList = !isIncludeList || options.BitwiseHasFlag(ComparisonOptions.ExcludeList);
+            // include list overrides behavior even if ExcludeList is provided (because its enabled by default, just exists for documentation purposes)
+            var isExcludeList = !isIncludeList;
 
             var excludeByNameOrPath = isExcludeList && (propertiesToExcludeOrInclude?.Contains(name) == true || propertiesToExcludeOrInclude?.Contains(path) == true);
             if (excludeByNameOrPath)
