@@ -15,7 +15,7 @@ namespace AnyDiff.Tests
             var object1 = new MyComplexObject(1, "A string", true);
             var object2 = new MyComplexObject(1, "A different string", true);
 
-            var diff = object1.Diff(object2, propertyList: x => x.Name);
+            var diff = object1.Diff(object2, propertiesToExcludeOrInclude: x => x.Name);
             Assert.AreEqual(0, diff.Count);
         }
 
@@ -77,7 +77,7 @@ namespace AnyDiff.Tests
             var object1 = new MyComplexObject(1, "A string", true);
             var object2 = new MyComplexObject(1, "A different string", true);
 
-            var diff = object1.Diff(object2, propertyList: "Name");
+            var diff = object1.Diff(object2, propertiesToExcludeOrInclude: "Name");
             Assert.AreEqual(0, diff.Count);
         }
 
