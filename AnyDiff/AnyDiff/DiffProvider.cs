@@ -733,7 +733,13 @@ namespace AnyDiff
         /// </summary>
         private enum FilterResult
         {
+            /// <summary>
+            /// Exclude property from analysis
+            /// </summary>
             Exclude,
+            /// <summary>
+            /// Include property for analysis
+            /// </summary>
             Include
         }
 
