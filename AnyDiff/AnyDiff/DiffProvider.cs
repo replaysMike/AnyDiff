@@ -536,7 +536,14 @@ namespace AnyDiff
             }
             else if (!leftValueType.IsValueType && leftValueType != typeof(string))
             {
-                differences = RecurseProperties(leftValue, rightValue, leftValue, differences, currentDepth, maxDepth, objectTree, path, options, propertiesToExcludeOrInclude, diffOptions);
+                if (leftValueType != rightValueType && leftValueType.BaseType == rightValueType.BaseType)
+                {
+                    differences.Add(new Difference(propertyType, propertyName, path, leftValue, rightValue, typeConverter));
+                }
+                else
+                {
+                    differences = RecurseProperties(leftValue, rightValue, leftValue, differences, currentDepth, maxDepth, objectTree, path, options, propertiesToExcludeOrInclude, diffOptions);
+                }
             }
             else
             {
