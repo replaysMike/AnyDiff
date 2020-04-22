@@ -572,8 +572,13 @@ namespace AnyDiff
                     countMethod = enumerableType.Methods.FirstOrDefault(x => x.Name.Equals("Count", StringComparison.CurrentCultureIgnoreCase));
                 if (countMethod != null)
                 {
-                    var retVal = countMethod.MethodInfo.Invoke(enumerable, null);
-                    return Convert.ToInt64(retVal);
+                    try
+                    {
+                        var retVal = Convert.ToInt64(countMethod.MethodInfo.Invoke(enumerable, null));
+                        return retVal;
+                    }
+                    catch (NotImplementedException) { return 0L; }
+                    catch (NotSupportedException) { return 0L; }
                 }
             }
 
@@ -587,7 +592,12 @@ namespace AnyDiff
             {
                 enumerator.Reset();
             }
-            catch (NotImplementedException) { }
+            catch (NotImplementedException) {
+                // not implemented
+            }
+            catch (NotSupportedException) {
+                // implemented but not supported
+            }
             return count;
         }
 

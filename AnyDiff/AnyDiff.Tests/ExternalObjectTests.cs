@@ -1,7 +1,10 @@
 ﻿using NUnit.Framework;
 using System.Drawing;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using TypeSupport.Extensions;
+#if !NET40
+using Microsoft.TeamFoundation.Build.WebApi;
+#endif
 
 namespace AnyDiff.Tests
 {
@@ -56,5 +59,36 @@ namespace AnyDiff.Tests
             var diff = AnyDiff.Diff(obj1, obj2);
             Assert.AreEqual(4, diff.Count);
         }
+
+#if !NET40
+        [Test]
+        public void ShouldDiff_BuildDefinition()
+        {
+            var obj1 = new BuildDefinition() {
+                AuthoredBy = new Microsoft.VisualStudio.Services.WebApi.IdentityRef { UniqueName = "Test Name", DisplayName = "Display Name" },
+                BadgeEnabled = true,
+                Comment = "Test Comment",
+                Id = 1,
+            };
+            obj1.SetPropertyValue("LatestBuild", new Build { Id = 1 });
+            obj1.LatestBuild.Properties.Add("test property", "property value");
+            obj1.Drafts.Add(new DefinitionReference { Name = "Definition 1" });
+            obj1.Metrics.Add(new BuildMetric { Name = "Metric 1" });
+            obj1.Variables.Add("test", new BuildDefinitionVariable { Value = "Test value" });
+            var obj2 = new BuildDefinition() {
+                AuthoredBy = new Microsoft.VisualStudio.Services.WebApi.IdentityRef { UniqueName = "Test Name", DisplayName = "Display Name 2" },
+                BadgeEnabled = true,
+                Comment = "Test Comment 2",
+                Id = 1
+            };
+            obj2.SetPropertyValue("LatestBuild", new Build { Id = 2 });
+            obj2.LatestBuild.Properties.Add("test property", "property value");
+            obj2.Drafts.Add(new DefinitionReference { Name = "Definition 1" });
+            obj2.Metrics.Add(new BuildMetric { Name = "Metric 1" });
+            obj2.Variables.Add("test", new BuildDefinitionVariable { Value = "Test value" });
+            var diff = AnyDiff.Diff(obj1, obj2);
+            Assert.AreEqual(3, diff.Count);
+        }
+#endif
     }
 }
