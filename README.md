@@ -81,7 +81,7 @@ Anydiff will ignore fields and properties decorated using attributes: `[IgnoreDa
 In addition, you can specify properties to ignore using expression syntax.
 See [Ignoring Properties and Fields](https://github.com/replaysMike/AnyDiff/wiki/Ignoring-Properties-and-Fields) for more details.
 
-Ignoring by properties explicitly:
+Ignoring by properties explicitly by passing a list of properties via expressions:
 
 ```csharp
 var object1 = new MyComplexObject(1, "A string", true);
@@ -90,7 +90,7 @@ var diff = object1.Diff(object2, x => x.Id, x => x.Name);
 Assert.AreEqual(diff.Count, 0);
 ```
 
-### Inclusion of Properties
+### Diff specified properties only
 
 AnyDiff also supports processing of specific properties if you don't want to diff the entire object. This works using the same syntax as ignoring properties but passing a different ComparisonOptions. In the example below, only the properties `Id` and `Name` will be compared.
 
@@ -103,12 +103,12 @@ Assert.AreEqual(diff.Count, 0);
 
 ### Comparing Unordered lists
 
-If you wish to perform a diff that ignores the ordering of data in a collection/list, you can specify that behavior with a ComparisonOptions flag as seen below.
+If you wish to perform a diff that ignores the ordering of data in a collection/list, you can specify that behavior with a ComparisonOptions `AllowCollectionsToBeOutOfOrder` flag as well as the `AllowEqualsOverride`, as seen below.
 
 ```csharp
 var list1 = new List<int> { 1, 2, 3 };
 var list2 = new List<int> { 1, 3, 2 };
-var diff = list1.Diff(list2, ComparisonOptions.All | ComparisonOptions.AllowCollectionsToBeOutOfOrder);
+var diff = list1.Diff(list2, ComparisonOptions.All | ComparisonOptions.AllowCollectionsToBeOutOfOrder | ComparisonOptions.AllowEqualsOverride);
 Assert.AreEqual(diff.Count, 0);
 ```
 
@@ -135,7 +135,7 @@ foreach(var difference in diff)
   - [x] Circular references
   - [x] Using TypeConverters to understand data types
   - [x] Deltas on strings, DateTimes, TimeSpans, numeric types
-  - [x] Comparing arrays, collections, dictionaries
+  - [x] Comparing arrays, collections, custom collections, dictionaries, hashtables
   - [x] Comparing collections with different ordering
   - [x] Complex objects, deep type inspection
   - [x] Entity Framework objects
