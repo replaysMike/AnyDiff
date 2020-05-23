@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -28,7 +29,6 @@ namespace AnyDiff
         /// <returns>A dot-notation path to the property</returns>
         private string GetPropertyPathInternal(Expression expression)
         {
-            // todo: there's a lot of room for cleanup here, I was still trying to understand expression parsing.
             var names = new List<string>();
             switch (expression)
             {
@@ -36,7 +36,11 @@ namespace AnyDiff
                     {
                         var parent = m.Expression as MemberExpression;
                         if (parent != null)
-                            names.Add(parent.Member.Name);
+                        {
+                            var fullnames = GetPropertyNames(parent);
+                            names.AddRange(fullnames.Reverse());
+                            //names.Add(parent.Member.Name);
+                        }
                         names.Add(m.Member.Name);
                     }
                     break;
@@ -44,7 +48,11 @@ namespace AnyDiff
                     {
                         var parent = m.Expression as MemberExpression;
                         if (parent != null)
-                            names.Add(parent.Member.Name);
+                        {
+                            var fullnames = GetPropertyNames(parent);
+                            names.AddRange(fullnames.Reverse());
+                            //names.Add(parent.Member.Name);
+                        }
                         var methodExp = m.Expression as MethodCallExpression;
                         if (methodExp != null)
                         {
@@ -57,7 +65,11 @@ namespace AnyDiff
                     {
                         var parent = m.Expression as MemberExpression;
                         if (parent != null)
-                            names.Add(parent.Member.Name);
+                        {
+                            var fullnames = GetPropertyNames(parent);
+                            names.AddRange(fullnames.Reverse());
+                            //names.Add(parent.Member.Name);
+                        }
                         var methodExp = m.Expression as MethodCallExpression;
                         if (methodExp != null)
                         {
@@ -79,7 +91,11 @@ namespace AnyDiff
                             }
                             var opExp = operand.Expression as MemberExpression;
                             if (opExp != null)
-                                names.Add(opExp.Member.Name);
+                            {
+                                var fullnames = GetPropertyNames(opExp);
+                                names.AddRange(fullnames.Reverse());
+                                //names.Add(opExp.Member.Name);
+                            }
                         }
                         names.Add(operand.Member.Name);
                     }
@@ -98,6 +114,25 @@ namespace AnyDiff
                     throw new NotImplementedException(expression.GetType().ToString());
             }
             return string.Join(".", names);
+        }
+
+        private IEnumerable<string> GetPropertyNames(MemberExpression body)
+        {
+            while (body != null)
+            {
+                yield return body.Member.Name;
+                var inner = body.Expression;
+                switch (inner.NodeType)
+                {
+                    case ExpressionType.MemberAccess:
+                        body = inner as MemberExpression;
+                        break;
+                    default:
+                        body = null;
+                        break;
+
+                }
+            }
         }
 
         private List<string> ParseArguments(ReadOnlyCollection<Expression> expressions)

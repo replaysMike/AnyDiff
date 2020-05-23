@@ -214,5 +214,20 @@ namespace AnyDiff.Tests
             var diff = object1.Diff(object2, ComparisonOptions.All, diffOptions);
             Assert.AreEqual(0, diff.Count);
         }
+
+        [Test]
+        public void Should_IncludeOnly_DeepPath()
+        {
+            var provider = new DiffProvider();
+
+            var obj1 = new DeepObject();
+            var obj2 = new DeepObject();
+            obj2.DeepChildObject.Id = 999;
+            obj2.DeepChildObject.DeepChild2Object.DeepChild3Object.Name = "Test";
+
+            var diff = provider.ComputeDiff<DeepObject>(obj1, obj2, ComparisonOptions.All | ComparisonOptions.IncludeList, x => x.DeepChildObject.DeepChild2Object.DeepChild3Object.Name);
+            Assert.AreEqual(1, diff.Count);
+            Assert.AreEqual(".DeepChildObject.DeepChild2Object.DeepChild3Object.Name", diff.First().Path);
+        }
     }
 }

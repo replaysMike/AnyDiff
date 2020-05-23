@@ -88,6 +88,19 @@ namespace AnyDiff.Tests
                 ".BasicChild.Children.Children.BasicChildName"}, paths);
         }
 
+        [Test]
+        public void Should_IncludeOnly_DeepPath()
+        {
+            var manager = new ExpressionManager();
+            var expressions = CreateExpressions<DeepObject>(
+                x => x.DeepChildObject.DeepChild2Object.DeepChild3Object.Name
+            );
+
+            var paths = expressions.Select(x => manager.GetPropertyPath(x)).ToList();
+            CollectionAssert.AreEqual(new[] {
+                ".DeepChildObject.DeepChild2Object.DeepChild3Object.Name"}, paths);
+        }
+
         /// <summary>
         /// Helper for creating expressions
         /// </summary>
