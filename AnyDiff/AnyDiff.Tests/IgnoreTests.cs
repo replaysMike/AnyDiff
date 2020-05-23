@@ -112,6 +112,26 @@ namespace AnyDiff.Tests
         }
 
         [Test]
+        public void ShouldInclude_ByPropertyPathList2()
+        {
+            var object1 = new Person {
+                Id = 1,
+                Author = new Author { FirstName = "John", LastName = "Smith", Address = new Address { City = "Los Angeles", Country = "USA" } },
+                Gender = Genders.Male,
+                Tagline = "Student",
+            };
+            var object2 = new Person {
+                Id = 2,
+                Author = new Author { FirstName = "Jane", LastName = "Doe", Address = new Address { City = "Beijing", Country = "China" } },
+                Gender = Genders.Female,
+                Tagline = "Graduate",
+            };
+
+            var diff = object1.Diff(object2, ComparisonOptions.IncludeList | ComparisonOptions.All, ".Author.Address.City", ".Author.Address.Country");
+            Assert.AreEqual(2, diff.Count);
+        }
+
+        [Test]
         public void ShouldInclude_ByPropertyNameList()
         {
             var object1 = new MyComplexObject(1, "A string", new Location(49.282730, -123.120735));
@@ -228,6 +248,30 @@ namespace AnyDiff.Tests
             var diff = provider.ComputeDiff<DeepObject>(obj1, obj2, ComparisonOptions.All | ComparisonOptions.IncludeList, x => x.DeepChildObject.DeepChild2Object.DeepChild3Object.Name);
             Assert.AreEqual(1, diff.Count);
             Assert.AreEqual(".DeepChildObject.DeepChild2Object.DeepChild3Object.Name", diff.First().Path);
+        }
+
+        [Test]
+        public void Should_IncludeOnly_DeepPath2()
+        {
+            var provider = new DiffProvider();
+
+            var obj1 = new Person {
+                Id = 1,
+                Author = new Author { FirstName = "John", LastName = "Smith", Address = new Address { City = "Los Angeles", Country = "USA" } },
+                Gender = Genders.Male,
+                Tagline = "Student",
+            };
+            var obj2 = new Person {
+                Id = 2,
+                Author = new Author { FirstName = "Jane", LastName = "Doe", Address = new Address { City = "Beijing", Country = "China" } },
+                Gender = Genders.Female,
+                Tagline = "Graduate",
+            };
+
+            var diff = provider.ComputeDiff<Person>(obj1, obj2, ComparisonOptions.All | ComparisonOptions.IncludeList, x => x.Author.Address.City, x => x.Author.Address.Country);
+            Assert.AreEqual(2, diff.Count);
+            Assert.AreEqual(".Author.Address.City", diff.First().Path);
+            Assert.AreEqual(".Author.Address.Country", diff.Skip(1).First().Path);
         }
     }
 }
