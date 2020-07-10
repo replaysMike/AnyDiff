@@ -198,7 +198,8 @@ namespace AnyDiff
             if (maxDepth > 0 && currentDepth >= maxDepth)
                 return differences;
 
-            var typeSupport = new ExtendedType(left != null ? left.GetType() : right.GetType(), DefaultTypeSupportOptions);
+            var type = left != null ? left.GetType() : right.GetType();
+            var typeSupport = type.GetExtendedType(DefaultTypeSupportOptions);
             if (typeSupport.Attributes.Any(x => diffOptions.AttributeIgnoreList.Contains(x)))
                 return differences;
             if (typeSupport.IsDelegate)

@@ -34,7 +34,7 @@
 
   <ItemGroup>
     <PackageReference Include="ILRepack.MSBuild.Task" Version="2.0.13" PrivateAssets="all" />
-    <PackageReference Include="TypeSupport" Version="1.0.108" PrivateAssets="all" />
+    <PackageReference Include="TypeSupport" Version="1.1.4" PrivateAssets="all" />
   </ItemGroup>
 
   <Target Name="ILRepack" AfterTargets="Build" Condition="'$(Configuration)' == 'Release' AND '$(TargetFramework)' != ''">
@@ -49,16 +49,7 @@
       <!-- Dot not internalize any types inside this assembly -->
     </ItemGroup>
     <Message Text="MERGING: $(TargetFramework) @(InputAssemblies->'%(Filename)') into $(OutputAssembly)" Importance="High" />
-    <ILRepack
-      Parallel="true"
-      AllowDuplicateResources="false"
-      DebugInfo="true"
-      OutputType="$(OutputType)"
-      MainAssembly="$(AssemblyName).dll"
-      OutputAssembly="$(AssemblyName).dll"
-      InputAssemblies="@(InputAssemblies)"
-      InternalizeExcludeAssemblies="@(InternalizeExcludeAssemblies)"
-      WorkingDirectory="$(WorkingDirectory)" />
+    <ILRepack Parallel="true" AllowDuplicateResources="false" DebugInfo="true" OutputType="$(OutputType)" MainAssembly="$(AssemblyName).dll" OutputAssembly="$(AssemblyName).dll" InputAssemblies="@(InputAssemblies)" InternalizeExcludeAssemblies="@(InternalizeExcludeAssemblies)" WorkingDirectory="$(WorkingDirectory)" />
   </Target>
 
 </Project>
