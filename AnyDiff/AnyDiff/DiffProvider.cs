@@ -390,7 +390,7 @@ namespace AnyDiff
                             // check array element for difference
                             if (leftValue != null && !leftValue.GetType().IsValueType && leftValue.GetType() != typeof(string))
                             {
-                                var itemDifferences = RecurseProperties(leftValue, rightValue, parent, new List<Difference>(), currentDepth, maxDepth, childObjectTree, path, options, propertiesToExcludeOrInclude, diffOptions);
+                                var itemDifferences = RecurseProperties(leftValue, rightValue, parent, new List<Difference>(), currentDepth, maxDepth, childObjectTree, path + $"[{leftIndex}]", options, propertiesToExcludeOrInclude, diffOptions);
                                 if (itemDifferences.Any() && options.BitwiseHasFlag(ComparisonOptions.AllowCollectionsToBeOutOfOrder))
                                     continue;
                                 else if (itemDifferences.Any())
@@ -480,7 +480,7 @@ namespace AnyDiff
                                     if (options.BitwiseHasFlag(ComparisonOptions.AllowCollectionsToBeOutOfOrder))
                                         continue;
                                     if (GetPropertyInclusionState(propertyName, path, options, propertiesToExcludeOrInclude, attributes, diffOptions.AttributeIgnoreList) == FilterResult.Include)
-                                        differences.Add(new Difference(leftValue?.GetType() ?? elementType, propertyName, path, leftIndex, leftValue, rightValue, typeConverter));
+                                        differences.Add(new Difference(leftValue?.GetType() ?? elementType, propertyName, path + $"[{leftIndex}]", leftIndex, leftValue, rightValue, typeConverter));
                                     hasMatch = true;
                                     break;
                                 }
@@ -504,7 +504,7 @@ namespace AnyDiff
                         if (!differences.Where(x => x.ArrayIndex == unmatchedElement.ArrayIndex && x.RightValue == unmatchedElement.Object).Any())
                         {
                             if (GetPropertyInclusionState(propertyName, path, options, propertiesToExcludeOrInclude, attributes, diffOptions.AttributeIgnoreList) == FilterResult.Include)
-                                differences.Add(new Difference(unmatchedElement.Object?.GetType() ?? elementType, propertyName, path, unmatchedElement.ArrayIndex, null, unmatchedElement.Object, typeConverter));
+                                differences.Add(new Difference(unmatchedElement.Object?.GetType() ?? elementType, propertyName, path + $"[{unmatchedElement.ArrayIndex}]", unmatchedElement.ArrayIndex, null, unmatchedElement.Object, typeConverter));
                         }
                     }
                     var leftUnmatched = matchTracker.GetLeftUnmatched();
@@ -514,7 +514,7 @@ namespace AnyDiff
                         if (!differences.Where(x => x.ArrayIndex == unmatchedElement.ArrayIndex && x.LeftValue == unmatchedElement.Object).Any())
                         {
                             if (GetPropertyInclusionState(propertyName, path, options, propertiesToExcludeOrInclude, attributes, diffOptions.AttributeIgnoreList) == FilterResult.Include)
-                                differences.Add(new Difference(unmatchedElement.Object?.GetType() ?? elementType, propertyName, path, unmatchedElement.ArrayIndex, unmatchedElement.Object, null, typeConverter));
+                                differences.Add(new Difference(unmatchedElement.Object?.GetType() ?? elementType, propertyName, path + $"[{unmatchedElement.ArrayIndex}]", unmatchedElement.ArrayIndex, unmatchedElement.Object, null, typeConverter));
                         }
                     }
 
@@ -530,7 +530,7 @@ namespace AnyDiff
                                 if (hasValue)
                                 {
                                     if (GetPropertyInclusionState(propertyName, path, options, propertiesToExcludeOrInclude, attributes, diffOptions.AttributeIgnoreList) == FilterResult.Include)
-                                        differences.Add(new Difference(aValueCollection.GetType(), propertyName, path, leftIndex, null, bValueEnumerator.Current, typeConverter));
+                                        differences.Add(new Difference(aValueCollection.GetType(), propertyName, path + $"[{leftIndex}]", leftIndex, null, bValueEnumerator.Current, typeConverter));
                                     leftIndex++;
                                 }
                             }
