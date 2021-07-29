@@ -34,7 +34,7 @@
 
   <ItemGroup>
     <PackageReference Include="ILRepack.MSBuild.Task" Version="2.0.13" PrivateAssets="all" />
-    <PackageReference Include="TypeSupport" Version="1.1.4" PrivateAssets="all" />
+    <PackageReference Include="TypeSupport" Version="1.1.10" PrivateAssets="all" />
   </ItemGroup>
 
   <Target Name="ILRepack" AfterTargets="Build" Condition="'$(Configuration)' == 'Release' AND '$(TargetFramework)' != ''">
