@@ -1,0 +1,21 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<Target Name="ILRepacker" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+		<ItemGroup>
+			<InputAssemblies Include="$(OutputPath)\AnyDiff.dll" />
+			<InputAssemblies Include="$(OutputPath)\TypeSupport.dll" />
+		</ItemGroup>
+		<Message Text="MERGING: $(TargetFramework) @(InputAssemblies->'%(Filename)') into $(AssemblyName)" Importance="High" />
+		<ILRepack
+			Parallel="true"
+			Internalize="true"
+			RenameInternalized="true"
+			AllowDuplicateResources="false"
+			TargetKind="Dll"
+			Verbose="true"
+			DebugInfo="true"
+			InputAssemblies="@(InputAssemblies)"
+			KeyFile="$(ProjectDir)..\AnyDiffStrongNameKey.snk"
+			OutputFile="$(OutputPath)\$(AssemblyName).dll"
+		/>
+	</Target>
+</Project>
