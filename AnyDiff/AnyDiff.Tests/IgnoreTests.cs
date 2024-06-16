@@ -188,7 +188,7 @@ namespace AnyDiff.Tests
             );
             // only the ComplexChildId should have changed
             Assert.AreEqual(1, diff.Count);
-            Assert.AreEqual(".Children.ComplexChildId", diff.First().Path);
+            Assert.AreEqual(".Children[1].ComplexChildId", diff.First().Path);
             Assert.AreEqual(2, diff.First().LeftValue);
             Assert.AreEqual(3, diff.First().RightValue);
         }
