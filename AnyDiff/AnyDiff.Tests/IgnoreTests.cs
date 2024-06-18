@@ -92,6 +92,26 @@ namespace AnyDiff.Tests
         }
 
         [Test]
+        public void ShouldExclude_NestedCollectionByName()
+        {
+            // If nested collection excluding with propertiesToExcludeOrInclude is working this test should output only 1 difference because the Child 2/Child 3 difference would be ignored. The values that are different are object1 and object2 id and the 2nd complex child name.
+            var basicChild = new BasicChild(1, "Basic Child");
+            // Notice "Child 2" at index [1]
+            var childrenList1 = new List<ComplexChild> { new ComplexChild(1, "Child 1", basicChild), new ComplexChild(2, "Child 2", basicChild) };
+            // Notice "Child 3" at index [1]
+            var childrenList2 = new List<ComplexChild> { new ComplexChild(1, "Child 1", basicChild), new ComplexChild(2, "Child 3", basicChild) };
+
+            // Notice id 1
+            var object1 = new ComplexObjectWithListChildren(1, "Name 1", childrenList1, basicChild);
+            // Notice id 2
+            var object2 = new ComplexObjectWithListChildren(2, "Name 1", childrenList2, basicChild);
+
+            var diff = object1.Diff(object2, ".Children.ChildName");
+            // There are 2 differences between the objects, but the difference count should be 1, because child name should be ignored.
+            Assert.AreEqual(1, diff.Count);
+        }
+
+        [Test]
         public void ShouldInclude_ByPropertyList()
         {
             var object1 = new MyComplexObject(1, "A string", new Location(49.282730, -123.120735));
